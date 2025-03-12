@@ -1,0 +1,40 @@
+
+==============PWM settings==============
+
+Pre-required setting
+$ config-pin p*.** pwm
+
+(p*.** → Pin you want to use)
+(This settings resets every time machine reboot)
+
+PWM pin-map
+ePWM0 channelA p9.22 / p9.31 (/sys/class/pwm/pwm-1:0)
+ePWM0 channelB p9.21 / p9.29 (/sys/class/pwm/pwm-1:1)
+ePWM1 channelA p9.14 / p8.36 (/sys/class/pwm/pwm-4:0)
+ePWM1 channelB p9.16 / p8.34 (/sys/class/pwm/pwm-4:1)
+ePWM2 channelA p8.19 / p8.45 (/sys/class/pwm/pwm-7:0)
+ePWM2 channelB p8.13 / p8.46 (/sys/class/pwm/pwm-7:1)
+
+Version
+Beaglebone 4.19.94-ti-r42
+Debian GNU/Linux 10(Buster)
+
+==========================================
+
+============Static IP settings============
+
+1.Check service name (network device) by command:
+$ connmanctl services
+*AO Wired                ethernet_***********_cable
+
+****** is MACaddress
+
+2.Use a command "connmanctl config"
+$ sudo connmanctl config ethernet_******_cable --ipv4 manual [192.168.**.**] [255.255.255.0] [192.168.**.1]
+
+[Want to set IP] [sub-net mask] [Default gateway]
+
+3.Check if it is set up
+$ ifconfig
+
+==========================================
