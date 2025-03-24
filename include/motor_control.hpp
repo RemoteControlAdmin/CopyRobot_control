@@ -18,7 +18,7 @@ namespace motorcontrol {
     
     Eigen::Vector3d convert_wheeltovoltage(Eigen::Vector3d forwheelvelocity);
 
-    void EnableMotorDrive();
+    void EnableMotorDrive(Eigen::Vector3d mortor_voltage);
 
     void DisableMotorDrive();
 
@@ -62,7 +62,7 @@ namespace motorcontrol {
 
     char DObufdat[2048];
     char Pathbufdat[2048];
-    const double WwtoVoltGain = 12/32.9754;
+    const double wwtovoltgain = 12/32.9754;
 
     // Set voltage power supply for a DC Motor   
     const double Vss = 24;

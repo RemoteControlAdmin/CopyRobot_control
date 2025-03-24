@@ -13,13 +13,12 @@ namespace motorcontrol{
 
         if (signal(SIGINT, handle_termination) == SIG_ERR) {
             perror("Error setting up signal handler");
-            return 1;
+            return;
         }
         
         //Call script file to setup PWM pin
         system("bash config_pin.sh");
         //Set period for each channel
-        period=1.0/(frequency_drive*1e-9);
         frequencyWrite(pwm_1, DCM1A, period);
         frequencyWrite(pwm_1, DCM1B, period);
         frequencyWrite(pwm_2, DCM2A, period);
@@ -37,7 +36,7 @@ namespace motorcontrol{
         }
     
         if (write(fd_direction, direction, strlen(direction)) == -1) {
-            perror("Error writing to direction");.
+            perror("Error writing to direction");
 
             exit(EXIT_FAILURE);
         }
@@ -166,7 +165,7 @@ namespace motorcontrol{
         analogWrite(pwm_2, DCM2B, V2B_peri);
         analogWrite(pwm_3, DCM3A, V3A_peri);
         analogWrite(pwm_3, DCM3B, V3B_peri);  
-        return 0;  
+        return;  
     }
     //Disable DC motor drive
     void MotorControl::DisableMotorDrive(){
@@ -179,7 +178,7 @@ namespace motorcontrol{
         digitalWrite(EN1, 0);
         digitalWrite(EN2, 0);
         digitalWrite(EN3, 0);
-        return 0;  
+        return;  
     }
     
 

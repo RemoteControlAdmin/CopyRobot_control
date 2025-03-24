@@ -6,6 +6,11 @@
 # include <cmath>
 #include <Eigen/Dense>
 
+#include <signal.h>   // signal, SIGINTなど
+#include <fcntl.h>    // open, O_WRONLYなど
+#include <unistd.h>   // close, writeなど
+#include <string.h>   // strlenなど（文字列処理）
+
 struct RobotData {
     std::vector<double> master_data;
     std::vector<double> copy_data;
