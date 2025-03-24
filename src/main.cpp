@@ -1,5 +1,6 @@
 # include <vector>
 # include <cmath>
+# include <iostream>
 # include "common.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
@@ -45,9 +46,10 @@ int main(){
         // 初期化で実行
         mat3x1.invwheelvelocity = inverce_kinematics.invwheel_velocity_cal(mat3x3.inverse, mat3x1.invrobotvelocity );
 
-        mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
+       mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
         
         robotdata.last_err_data = robotdata.err_data;
+	std::cout << "test";
 
     }
 
