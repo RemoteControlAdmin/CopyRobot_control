@@ -19,7 +19,7 @@ namespace robotkinematics {
     
     Eigen::Matrix3d invmatrix_cal();
 
-    Eigen::Vector3d invwheel_velocity_cal(Eigen::Vector3d velocity_data, Eigen::Vector3d invrobotvelocity);
+    Eigen::Vector3d invwheel_velocity_cal(Eigen::Matrix3d inverse, Eigen::Vector3d invrobotvelocity);
 
     private:
     Eigen::Matrix3d inverse_trans;
