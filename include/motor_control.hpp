@@ -48,7 +48,7 @@ namespace motorcontrol {
     */
    Eigen::Vector3d mortor_voltage;
 
-    int Possock;
+    int Possock = -1;
     const int frequency_drive = 1000; 
     const int period=1.0/(frequency_drive*1e-9);
 
@@ -61,8 +61,8 @@ namespace motorcontrol {
     const int EN1=26, EN2=65, EN3=46;
     const int pwm_1=7, pwm_2=1, pwm_3=4; //PWM Chip No. 7,1,4
 
-    char DObufdat[2048];
-    char Pathbufdat[2048];
+    char DObufdat[2048]= {0};
+    char Pathbufdat[2048]= {0};
     const double wwtovoltgain = 12/32.9754;
 
     // Set voltage power supply for a DC Motor   

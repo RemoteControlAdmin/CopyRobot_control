@@ -3,6 +3,7 @@
 namespace motorcontrol{
     MotorControl* MotorControl::instance = nullptr;
     MotorControl::MotorControl(){
+        instance = this;
         setperiod_channel();
     }
 
