@@ -67,12 +67,12 @@ int main(){
         // μs（マイクロ秒）単位で取得
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
         micro_dt = micro_current_clock - micro_last_clock;
-	    
-        if (micro_dt.count <= dt){
-            Sleep(dt - micro_dt.count);
+	    micro_last_clock =  micro_current_clock;
+        if (micro_dt.count() <= dt){
+            Sleep(dt - micro_dt.count());
         }
 
-        std::cout << "dt = " << micro_dt << std::endl;
+        std::cout << "dt = " << micro_dt.count() << std::endl;
 
     }
 
