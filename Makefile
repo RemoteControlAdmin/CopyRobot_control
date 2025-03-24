@@ -12,7 +12,7 @@ LDFLAGS  := -lpthread -lrt -lm
 TARGET   := forcecontrol
 
 # ソースファイル (必要に応じて追加)
-SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/udp_connect.cpp
+SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp
 
 # オブジェクトファイル (自動生成)
 OBJS     := $(SRCS:.cpp=.o)

@@ -6,7 +6,7 @@ namespace robotcontrol{
     RobotDataCal::RobotDataCal(){
     }
     //private
-    std::vector<double> convert_m_rad(std::vector<double> data/*master robot data*/){
+    std::vector<double> RobotDataCal::convert_m_rad(std::vector<double> data/*master robot data*/){
         data[0] = data[0]/1000.0; // converted to m
         data[1] = data[1]/1000.0; // converted to m
         data[2] = fmod(data[2]*M_PI /180.0+M_PI,2*M_PI)-M_PI;; //Wrap to the range from [0,360] to [-pi, +pi]

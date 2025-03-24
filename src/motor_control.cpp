@@ -1,6 +1,7 @@
 # include "motor_control.hpp"
 
 namespace motorcontrol{
+    MotorControl* MotorControl::instance = nullptr;
     MotorControl::MotorControl(){
         setperiod_channel();
     }
