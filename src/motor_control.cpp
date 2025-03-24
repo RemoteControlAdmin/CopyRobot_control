@@ -1,27 +1,25 @@
 # include "motor_control.hpp"
 
 namespace motorcontrol{
-    MotorControl* MotorControl::instance = nullptr;
+    MotorControl* MotorControl::instance = nullptr; // make instans
     MotorControl::MotorControl(){
         instance = this;
-        setperiod_channel();
+        setperiod_channel();    // initialize pwm
     }
 
     /*
     *    ========= private =========
     */
-    
     void MotorControl::setperiod_channel(){
-
+        /*
+        * pwmの初期化と各チャンネルの周期を設定 Initialize pwm and set the period for each channel
+        */
         if (signal(SIGINT, handle_termination) == SIG_ERR) {
             perror("Error setting up signal handler");
             return;
         }
-        
-        //Call script file to setup PWM pin
-        system("bash config_pin.sh");
-        //Set period for each channel
-        frequencyWrite(pwm_1, DCM1A, period);
+        system("bash config_pin.sh");//Call script file to setup PWM pin
+        frequencyWrite(pwm_1, DCM1A, period);//Set period for each channel
         frequencyWrite(pwm_1, DCM1B, period);
         frequencyWrite(pwm_2, DCM2A, period);
         frequencyWrite(pwm_2, DCM2B, period);
@@ -30,13 +28,15 @@ namespace motorcontrol{
     }
 
     void MotorControl::pinMode(int pin, const char *direction){
+        /*
+        * GPIO ピンの方向（入出力方向）の設定　Setting the GPIO pin direction (input/output direction)
+        */
         snprintf(Pathbufdat, sizeof(Pathbufdat), "%s%d/direction", "/sys/class/gpio/gpio", pin);
         int fd_direction = open(Pathbufdat, O_WRONLY);
         if (fd_direction == -1) {
             perror("Error opening direction file");
             exit(EXIT_FAILURE);
         }
-    
         if (write(fd_direction, direction, strlen(direction)) == -1) {
             perror("Error writing to direction");
 
@@ -46,6 +46,9 @@ namespace motorcontrol{
     }
 
     void MotorControl::digitalWrite(int pin, int value){
+        /*
+        *  GPIOに high/low を書き込む　Write the high/low in GPIO 
+        */
         snprintf(Pathbufdat, sizeof(Pathbufdat), "%s%d/value", "/sys/class/gpio/gpio", pin);
         int fd_value = open(Pathbufdat, O_WRONLY);
         if (fd_value == -1) {
@@ -62,6 +65,9 @@ namespace motorcontrol{
     }
 
     void MotorControl::frequencyWrite(int chip, int channel, int Period) {
+        /*
+        * pwmの周期を設定（ナノ秒） Settings about pwd cycle (nano sec)
+        */
         char path[50];
         sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/period", chip, chip, channel);
         int period_fd = open(path, O_WRONLY);
@@ -73,8 +79,11 @@ namespace motorcontrol{
         close(period_fd);
     }
 
-    //Analog write a duty of a PWM pin
+    
     void MotorControl::analogWrite(int chip, int channel, int duty_cycle) {
+        /*
+        * pwmのデューティ比を設定 Analog write a duty of a PWM pin
+        */
         char path[50];
         sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/duty_cycle", chip, chip, channel);
         int duty_cycle_fd = open(path, O_WRONLY);
@@ -86,8 +95,11 @@ namespace motorcontrol{
         close(duty_cycle_fd);
     }
 
-    //Set the enable of a PWM pin
+    
     void MotorControl::enable_pwm(int chip, int channel) {
+        /*
+        * PWM出力を有効化 Set the enable of a PWM pin
+        */
         char path[50];
         sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/enable", chip, chip, channel);    
         int enable_fd = open(path, O_WRONLY);
@@ -99,9 +111,12 @@ namespace motorcontrol{
         close(enable_fd);
     }
 
-    //Set the disable of a PWM pin
+    
     void MotorControl::disable_pwm(int chip, int channel) {
-        char path[50];
+        /*
+        * PWM出力を無効化 Set the disable of a PWM pin
+        */
+         char path[50];
         sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/enable", chip, chip, channel); 
         int enable_fd = open(path, O_WRONLY);
         if (enable_fd == -1) {
@@ -111,7 +126,6 @@ namespace motorcontrol{
         dprintf(enable_fd, "0");
         close(enable_fd);
     }
-    // Signal handler to stop the loop gracefully on Ctrl+C
     void MotorControl::handle_termination(int signum) {
         if(instance != nullptr){
             instance->DisableMotorDrive(); // インスタンス経由で呼び出す
@@ -122,8 +136,6 @@ namespace motorcontrol{
     /*
     *    ========= public =========
     */
-    
-
     Eigen::Vector3d MotorControl::convert_wheeltovoltage(Eigen::Vector3d forwheelvelocity){
         mortor_voltage = forwheelvelocity * wwtovoltgain;
 
