@@ -111,14 +111,10 @@ namespace motorcontrol{
     }
     // Signal handler to stop the loop gracefully on Ctrl+C
     void MotorControl::handle_termination(int signum) {
-        printf("\nTermination signal by (Ctrl+C).\n\n");
-        //You can perform cleanup or other actions before exiting
-        //For example, freeing allocated memory, closing files, etc.
-
-        //Disable a Robot
-        DisableMotorDrive();
-        close(Possock);
-        exit(signum);
+        if(instance != nullptr){
+            instance->DisableMotorDrive(); // インスタンス経由で呼び出す
+            close(instance->Possock);      // インスタンス経由でアクセスする
+        }
     }
 
     /*
