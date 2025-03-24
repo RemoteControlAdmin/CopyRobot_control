@@ -28,6 +28,16 @@ int main(){
 
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();
     robotdata.last_err_data =  {0,0,0};
+    std::chrono::high_resolution_clock::time_point last_clock;
+    std::chrono::microseconds micro_last_clock;
+    std::chrono::high_resolution_clock::time_point current_clock;
+    std::chrono::microseconds micro_current_clock;
+    std::chrono::microseconds micro_dt;
+    int dt = 30*1000;
+    // 現在時刻を取得
+    last_clock = std::chrono::high_resolution_clock::now();
+    // μs（マイクロ秒）単位で取得
+    micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch());
 
     while(1){
         //UDP受信
@@ -46,10 +56,23 @@ int main(){
         // 初期化で実行
         mat3x1.invwheelvelocity = inverce_kinematics.invwheel_velocity_cal(mat3x3.inverse, mat3x1.invrobotvelocity );
 
-       mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
+        mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
         
+        motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
+
         robotdata.last_err_data = robotdata.err_data;
-	std::cout << "test";
+
+        // 現在時刻を取得
+        current_clock = std::chrono::high_resolution_clock::now();
+        // μs（マイクロ秒）単位で取得
+        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
+        micro_dt = micro_current_clock - micro_last_clock;
+	    
+        if (micro_dt.count <= dt){
+            Sleep(dt - micro_dt.count);
+        }
+
+        std::cout << "dt = " << micro_dt << std::endl;
 
     }
 
