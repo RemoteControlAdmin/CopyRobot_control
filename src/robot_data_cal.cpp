@@ -25,7 +25,7 @@ namespace robotcontrol{
     }
 
     //[Pe]=[Pd]-[Pg]
-    std::vector<double> RobotDataCal::err_robotposition_cal(RobotData robotdata){
+    std::array<double,3> RobotDataCal::err_robotposition_cal(RobotData robotdata){
         int i;
         for(i=0;i<3;i++){
             robotdata.err_data[i]=robotdata.master_data[i]-robotdata.copy_data[i];

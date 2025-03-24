@@ -16,7 +16,7 @@ namespace robotcontrol {
     RobotDataCal();
 
     RobotData convert_robotdata(RobotData robotdata);
-    std::vector<double> err_robotposition_cal(RobotData robotdata);
+    std::array<double,3> err_robotposition_cal(RobotData robotdata);
 
     private:
     std::vector<double> convert_m_rad(std::vector<double> data);
