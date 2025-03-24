@@ -1,0 +1,54 @@
+#include "robot_control.hpp"
+
+
+
+namespace robotcontrol{
+    RobotControl::RobotControl(){
+        Integral = std::vector<double> {0,0,0};
+        Derivative = std::vector<double> {0,0,0};
+        Kp = 1.5;
+        Ki = 0.015;
+        Kd = 0;
+    }
+    //private
+    // public
+    //[Vc] PID Closed Loop Control Velocity Command
+    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(RobotData robotdata){
+        int i;
+        //printf("Global Velocity Matrix Command");
+        for(i=0;i<3;i++){
+        //	printf("\n");
+        //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
+            Integral[i]		+= robotdata.err_data[i];								//Calculate the integral term
+            Derivative[i]	= robotdata.err_data[i] - robotdata.last_err_data[i];						//Calculate the derivative term
+            velocity_data[i] = Kp*robotdata.err_data[i] + Ki*Integral[i] + Kd*Derivative[i];	//Calculate the output term
+        //	printf("%+.4f",Vc[i]);
+        }
+        return velocity_data;
+    }
+
+    Eigen::Vector3d RobotControl::VelocityLimitationCal(Eigen::Vector3d velocity_data){
+        //[Wcmax]=[-m]*[Vlc]+[Wgmax],[Wcmin]=[+m]*[Vlc]-[Wgmax]
+        double Vlc=sqrt((velocity_data[0]*velocity_data[0])+(velocity_data[1]*velocity_data[1]));
+        double Wlc=velocity_data[2];
+        double Wcmax=-8.6962*Vlc+14.3400;
+        double Wcmin=+8.6962*Vlc-14.3400;
+
+        if(((Vlc>=0)&&(Vlc<=1.6490))&&((Wlc>=Wcmin)&&(Wlc<=Wcmax))){
+            return velocity_data;
+            //ChkStop=0;
+        }
+        else{
+            velocity_data[0] = 0;
+            velocity_data[1] = 0;
+            velocity_data[2] = 0;
+            //ChkStop=1;
+        }
+        
+        return velocity_data;
+        }
+
+   
+
+}
+    
