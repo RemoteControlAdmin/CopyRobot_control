@@ -1,26 +1,36 @@
-# mode:-*-makefile-*-
+# Improved Makefile
 # - compile forcecontrol as static executable
 # - test utility can be compiled separately
 # (c) mobalean LLC
 
-CC = /usr/bin/g++
-AR = /usr/bin/ar
-OPTS = -Wall
-DEFINES= _REENTRANT -DAFFY
-CFLAGS = -O3 -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon -D$(DEFINES)
-LDFLAGS = -lpthread -lrt -lm
-INCLUDES =
+CC       := /usr/bin/g++
+AR       := /usr/bin/ar
+CFLAGS   := -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
+DEFINES  := -D_REENTRANT -DAFFY
+INCLUDES := -I./include
+LDFLAGS  := -lpthread -lrt -lm
 
-USER-OBJS-COM1 = 03-Unilateral_Compensation.o  udp_connect.o
-USER-EXEC-COM1 = a.out
+TARGET   := forcecontrol
 
-all:$(USER-EXEC-COM1)
+# ソースファイル (必要に応じて追加)
+SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/udp_connect.cpp
 
-$(USER-EXEC-COM1):$(USER-OBJS-COM1)
-	$(CC) $(LDFLAGS) -o $@ $(USER-OBJS-COM1)
+# オブジェクトファイル (自動生成)
+OBJS     := $(SRCS:.cpp=.o)
 
+# デフォルトターゲット
+all: $(TARGET)
+
+# リンク処理
+$(TARGET): $(OBJS)
+	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
+
+# コンパイル処理
+%.o: %.cpp
+	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c -o $@ $<
+
+# クリーン処理
 clean:
-	-rm -f $(EXEC) *.elf *.gdb *.o a.out
+	-rm -f $(TARGET) *.o *.elf *.gdb
 
-%.o: %.c
-	$(CC) -c $(CFLAGS) -o $@ $<
+.PHONY: all clean
