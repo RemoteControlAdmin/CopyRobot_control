@@ -26,13 +26,13 @@ int main(){
 
 
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();
-    robotdata.last_err_data = std::array<double,3> {0,0,0};
+    robotdata.last_err_data =  {0,0,0};
 
     while(1){
         //UDP受信
         // pass
-        robotdata.master_data = std::vector<double> {0,0,0,0,0,0}
-        robotdata.copy_data = std::vector<double> {0,0,0,0,0,0}
+        robotdata.master_data = std::vector<double> {0,0,0,0,0,0};
+        robotdata.copy_data = std::vector<double> {0,0,0,0,0,0};
 
         robotdata = robot_data_cal.convert_robotdata(robotdata);//Get MasterRobot's Position for manual path trajectory
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata);
