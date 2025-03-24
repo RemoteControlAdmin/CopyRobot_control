@@ -5,7 +5,7 @@
 # include "robot_data_cal.hpp"
 # include "robot_control.hpp"
 # include "inverce_kinematics.hpp"
-# include "ufp_connect.hpp"
+# include "udp_connect.hpp"
 
 //構造体定義
 RobotData robotdata;
@@ -14,13 +14,13 @@ Mat3X3 mat3x3;
 
 int main(){
     //クラス定義
-    motorcontrol::MotorControl motor_control(); // Motor設定
+    motorcontrol::MotorControl motor_control{}; // Motor設定
     
-    robotcontrol::RobotDataCal robot_data_cal();
+    robotcontrol::RobotDataCal robot_data_cal{};
 
-    robotcontrol::RobotControl robot_control();
+    robotcontrol::RobotControl robot_control{};
 
-    robotkinematics::InverceKinematics inverce_kinematics();
+    robotkinematics::InverceKinematics inverce_kinematics{};
 
     udp_lib::UdpConnect udpConnection("192.168.11.29", 4102, 6); // UDP初期化
 

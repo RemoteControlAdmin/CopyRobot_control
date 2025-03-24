@@ -20,7 +20,7 @@ namespace motorcontrol {
 
     void EnableMotorDrive();
 
-    void DisableMotorDrive()
+    void DisableMotorDrive();
 
     private:
     /*
@@ -41,11 +41,6 @@ namespace motorcontrol {
     void disable_pwm(int chip, int channel);
 
     void handle_termination(int signum);
-
-    void pinMode(int pin, const char *direction);
-
-    void digitalWrite(int pin, int value);
-    
 
     /*
     *    ========= private parameter =========
