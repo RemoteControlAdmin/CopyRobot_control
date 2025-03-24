@@ -33,7 +33,7 @@ int main(){
     std::chrono::high_resolution_clock::time_point current_clock;
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt;
-    int dt = 30*1000;
+    std::chrono::microseconds dt = 30*1000;
     // 現在時刻を取得
     last_clock = std::chrono::high_resolution_clock::now();
     // μs（マイクロ秒）単位で取得
@@ -68,8 +68,8 @@ int main(){
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
         micro_dt = micro_current_clock - micro_last_clock;
 	    micro_last_clock =  micro_current_clock;
-        if (micro_dt.count() <= dt){
-            Sleep(dt - micro_dt.count());
+        if (micro_dt <= dt){
+            std::this_thread::sleep_for(dt - micro_dt);
         }
 
         std::cout << "dt = " << micro_dt.count() << std::endl;
