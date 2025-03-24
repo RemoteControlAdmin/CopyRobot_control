@@ -40,7 +40,7 @@ namespace motorcontrol {
     
     void disable_pwm(int chip, int channel);
 
-    void handle_termination(int signum);
+    static void handle_termination(int signum);
 
     /*
     *    ========= private parameter =========
