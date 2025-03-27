@@ -60,10 +60,10 @@ int main(){
         /*
         * UDP受信 UDP recive
         */
-        std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
-        //std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
-        robotdata.master_data =receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
-        robotdata.copy_data = std::vector<double>{0,0,0,0,0,0};// receiveddata_copy.first;
+        //std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
+        //robotdata.master_data =receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
+        robotdata.copy_data = receiveddata_copy.first;
 
         /*
         *  data calculation about robot
