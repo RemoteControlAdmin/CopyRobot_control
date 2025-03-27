@@ -46,13 +46,13 @@ int main(){
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
     std::chrono::microseconds dt(10*1000); // calculation cycle
-
+    std::chrono::microseconds first_clock;  // 最初の時刻
     /*
     * ============== 処理 process ==============
     */
     last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
     micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
-
+    first_clock = micro_last_clock;
     /*
     * ============== main roop ==============
     */
@@ -69,7 +69,7 @@ int main(){
         *  data calculation about robot
         */
         robotdata = robot_data_cal.convert_robotdata(robotdata);    //Get MasterRobot's Position for manual path trajectory
-        robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data);
+        robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata);
         
         /*
