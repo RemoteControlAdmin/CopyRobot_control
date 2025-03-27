@@ -107,7 +107,10 @@ int main(){
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
             micro_dt = micro_current_clock - micro_last_clock;
         micro_last_clock = micro_current_clock;
-        std::cout << "dt = " << micro_dt.count() << std::endl;
+
+        std::cout << "Mpx = "<< robotdata.master_data[0] << "Mpy = "<< robotdata.master_data[1] << "Mpt = "<< robotdata.master_data[2] << std::endl;
+        std::cout << "Cpx = "<< robotdata.copy_data[0] << "Cpy = "<< robotdata.copy_data[1] << "Cpt = "<< robotdata.copy_data[2] << std::endl;
+        //std::cout << "dt = " << micro_dt.count() << std::endl;
 
     }
 
