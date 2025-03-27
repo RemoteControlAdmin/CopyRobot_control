@@ -21,7 +21,7 @@ namespace robotcontrol{
         robotdata.master_data = RobotDataCal::convert_m_rad(robotdata.master_data);
         robotdata.copy_data = RobotDataCal::convert_m_rad(robotdata.copy_data);
 
-        return robotdata;
+        return                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 ;
     }
 
     //[Pe]=[Pd]-[Pg]
@@ -33,14 +33,15 @@ namespace robotcontrol{
         return robotdata.err_data;
     }
 
-    /*
+    
     //[Pd] Linear movement
-    void MRobot_Linear_PositionCal(){
-        if     ((Elapsed>=0000)&&(Elapsed<= 5000))	{Pd[0]=0.4;Pd[1]=0.4;Pd[2]=M_PI/2;}
-        else if((Elapsed> 5000)&&(Elapsed<= 8000))	{Pd[0]=0.6;Pd[1]=0.6;Pd[2]=M_PI/2;}
-        else										{Pd[0]=0.4;Pd[1]=0.4;Pd[2]=M_PI/2;}
-        return;
+    std::vector<double> RobotDataCal::MRobot_Linear_PositionCal(std::vector<double> data, int time){
+        if     ((time>=0)&&(time<= 5*10**6))	{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
+        else if((time> 5*10**6)&&(time<= 8*10**6))	{data[0]=0.6;data[1]=0.6;data[2]=M_PI/2;}
+        else										{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
+        return data;
     }
+    /*
         //[Pd] Rotate movement
     double MRobot_Rotate_PositionCal(){
         if     ((Elapsed>=0000)&&(Elapsed<= 5000))	{Pd[0]=0.5;Pd[1]=0.5;Pd[2]=(1*M_PI)/4;}

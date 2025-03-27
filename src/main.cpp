@@ -37,6 +37,8 @@ int main(){
     */
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
     robotdata.last_err_data =  {0,0,0};     // initialize about last error data
+    robotdata.master_data =  {0,0,0,0,0,0};     // initialize about last master data
+    robotdata.copy_data =  {0,0,0,0,0,0};     // initialize about last copy data
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
@@ -58,15 +60,24 @@ int main(){
         /*
         * UDP受信 UDP recive
         */
+<<<<<<< HEAD
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         //std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
         robotdata.master_data =receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
         robotdata.copy_data = std::vector<double>{0,0,0,0,0,0};// receiveddata_copy.first;
+=======
+        //std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        std::pair<std::vector<double>, int> receivedData_copy = udpConnection_from_copy.udp_recv();     // from copy robot
+        //robotdata.master_data = receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
+        
+        robotdata.copy_data =  receiveddata_copy.first;
+>>>>>>> 473a0ae (直線運動テスト)
 
         /*
         *  data calculation about robot
         */
         robotdata = robot_data_cal.convert_robotdata(robotdata);    //Get MasterRobot's Position for manual path trajectory
+        robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata);
         
         /*
