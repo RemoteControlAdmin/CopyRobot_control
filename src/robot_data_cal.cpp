@@ -36,8 +36,8 @@ namespace robotcontrol{
     
     //[Pd] Linear movement
     std::vector<double> RobotDataCal::MRobot_Linear_PositionCal(std::vector<double> data, int time){
-        if     ((time>=0)&&(time<= 5*10**6))	{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
-        else if((time> 5*10**6)&&(time<= 8*10**6))	{data[0]=0.6;data[1]=0.6;data[2]=M_PI/2;}
+        if     ((time>=0)&&(time<= 5*pow(10,6)))	{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
+        else if((time> 5*pow(10,6))&&(time<= 8*pow(10,6)))	{data[0]=0.6;data[1]=0.6;data[2]=M_PI/2;}
         else										{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
         return data;
     }
