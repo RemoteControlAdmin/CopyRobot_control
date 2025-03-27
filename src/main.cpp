@@ -30,7 +30,7 @@ int main(){
     udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
     udp_lib::UdpConnect udpConnection_from_master("0.0.0.0", 40011, 6); // from Master Robot
     udpConnection_from_master.udp_bind();
-    udp_lib::UdpConnect udpConnection_from_copy("0.0.0.0", 41011, 6); // from Master Robot
+    udp_lib::UdpConnect udpConnection_from_copy("0.0.0.0", 41031, 6); // from Master Robot
     udpConnection_from_copy.udp_bind();
     /*
     * ローカル変数定義　local variable definition
@@ -60,18 +60,10 @@ int main(){
         /*
         * UDP受信 UDP recive
         */
-<<<<<<< HEAD
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         //std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
         robotdata.master_data =receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
         robotdata.copy_data = std::vector<double>{0,0,0,0,0,0};// receiveddata_copy.first;
-=======
-        //std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
-        std::pair<std::vector<double>, int> receivedData_copy = udpConnection_from_copy.udp_recv();     // from copy robot
-        //robotdata.master_data = receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
-        
-        robotdata.copy_data =  receiveddata_copy.first;
->>>>>>> 473a0ae (直線運動テスト)
 
         /*
         *  data calculation about robot
