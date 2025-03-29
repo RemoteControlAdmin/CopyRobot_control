@@ -14,6 +14,13 @@ RobotData robotdata;
 Mat3x1 mat3x1;
 Mat3X3 mat3x3;
 
+
+void end_task(int signum){
+        motor_control.DisableMotorDrive();
+        std::cout << "=== end ===" << std::endl;
+        std::exit(signum);
+}
+
 int main(){
     /*
     * インスタンス作成 Instance creation
@@ -30,7 +37,7 @@ int main(){
     udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
     udp_lib::UdpConnect udpConnection_from_master("0.0.0.0", 40011, 6); // from Master Robot
     udpConnection_from_master.udp_bind();
-    udp_lib::UdpConnect udpConnection_from_copy("0.0.0.0", 41031, 6); // from Master Robot
+    udp_lib::UdpConnect udpConnection_from_copy("0.0.0.0", 41031, 6); // from Copy Robot
     udpConnection_from_copy.udp_bind();
     /*
     * ローカル変数定義　local variable definition
@@ -57,6 +64,8 @@ int main(){
     * ============== main roop ==============
     */
     while(1){
+        // 強制終了処理　end proccess
+        std::signal(SIGINT, end_task);
         /*
         * UDP受信 UDP recive
         */
