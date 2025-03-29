@@ -15,13 +15,18 @@ Mat3x1 mat3x1;
 Mat3X3 mat3x3;
 
 
+volatile std::sig_atomic_t stop_flag = 0; // グローバル変数として定義
 void end_task(int signum){
-        motor_control.DisableMotorDrive();
-        std::cout << "=== end ===" << std::endl;
-        std::exit(signum);
+    if(signum == SIGINT) {
+        std::cout << "\n[INFO] Ctrl+C detected. Exiting..." << std::endl;
+        stop_flag = 1;
+    }
 }
 
 int main(){
+    // 強制終了処理　end proccess
+    std::signal(SIGINT, end_task);
+
     /*
     * インスタンス作成 Instance creation
     */
@@ -63,9 +68,8 @@ int main(){
     /*
     * ============== main roop ==============
     */
-    while(1){
-        // 強制終了処理　end proccess
-        std::signal(SIGINT, end_task);
+    while(!stop_flag){
+        
         /*
         * UDP受信 UDP recive
         */
@@ -122,5 +126,9 @@ int main(){
         //std::cout << "dt = " << micro_dt.count() << std::endl;
 
     }
+    // 終了前の後始末
+    motor_control.DisableMotorDrive();
+    std::cout << "[INFO] Program terminated gracefully." << std::endl;
+    return 0;
 
 }
