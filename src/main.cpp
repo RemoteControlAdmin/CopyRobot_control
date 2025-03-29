@@ -2,6 +2,7 @@
 # include <vector>
 # include <cmath>
 # include <iostream>
+#include <csignal>
 # include "common.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
