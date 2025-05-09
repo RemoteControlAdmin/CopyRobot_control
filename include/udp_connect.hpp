@@ -64,7 +64,7 @@ class UdpCommunicator{
         std::deque<std::pair<std::vector<double>, int>>& deque_copy_;
         std::mutex& queue_mutex_master_;
         std::mutex& queue_mutex_copy_;
-}
+};
 
 }
 

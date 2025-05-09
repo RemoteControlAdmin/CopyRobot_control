@@ -80,7 +80,7 @@ int main(){
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master);
             if (!deque_master.empty()){
-                robotdata.master_data = deque_master.front();
+                robotdata.master_data = deque_master.front().first;
                 deque_master.pop_front();
             }
         } // unlock用
@@ -88,7 +88,7 @@ int main(){
         {
             std::lock_guard<std::mutex> lock(queue_mutex_copy);
             if (!deque_copy.empty()){
-                robotdata.copy_data = deque_copy.front();
+                robotdata.copy_data = deque_copy.front().first;
                 deque_copy.pop_front();
             }
         } // unlock用
