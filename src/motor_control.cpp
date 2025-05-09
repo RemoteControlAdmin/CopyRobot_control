@@ -14,10 +14,6 @@ namespace motorcontrol{
         /*
         * pwmの初期化と各チャンネルの周期を設定 Initialize pwm and set the period for each channel
         */
-        if (signal(SIGINT, handle_termination) == SIG_ERR) {
-            perror("Error setting up signal handler");
-            return;
-        }
         system("bash config_pin.sh");//Call script file to setup PWM pin
         frequencyWrite(pwm_1, DCM1A, period);//Set period for each channel
         frequencyWrite(pwm_1, DCM1B, period);
@@ -126,12 +122,13 @@ namespace motorcontrol{
         dprintf(enable_fd, "0");
         close(enable_fd);
     }
+    /*
     void MotorControl::handle_termination(int signum) {
         if(instance != nullptr){
             instance->DisableMotorDrive(); // インスタンス経由で呼び出す
             close(instance->Possock);      // インスタンス経由でアクセスする
         }
-    }
+    }*/
 
     /*
     *    ========= public =========
