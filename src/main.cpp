@@ -11,7 +11,7 @@
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
 
-volatile std::sig_atomic_t stop_flag = 0; // グローバル変数として定義
+std::atomic<bool> stop_flag(false);// グローバル変数として定義
 void end_task(int signum){
     if(signum == SIGINT) {
         std::cout << "\n[INFO] Ctrl+C detected. Exiting..." << std::endl;

@@ -12,7 +12,8 @@
 #include <string.h>   // strlenなど（文字列処理）
 #include <csignal>
 
-extern volatile std::sig_atomic_t stop_flag;
+
+extern std::atomic<bool> stop_flag;
 
 struct RobotData {
     std::vector<double> master_data;
