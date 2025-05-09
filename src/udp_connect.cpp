@@ -17,6 +17,15 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
         exit(EXIT_FAILURE);
     }
 
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 50000;  // 50ミリ秒（必要に応じて調整）
+    
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
+        perror("Error setting socket timeout");
+        exit(EXIT_FAILURE);
+    }
+
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(address.c_str());
     addr.sin_port = htons(port);
@@ -50,6 +59,17 @@ std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
     socklen_t addr_len = sizeof(sender_addr);
     //データ受信
     size_t received_bytes = recvfrom(sock, buffer, total_buffer_size, 0, (struct sockaddr*)&sender_addr, &addr_len);
+
+    if (received_bytes < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // タイムアウト：データなし
+            return {};  // 空データを返す
+        } else {
+            perror("recvfrom failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+
     // 受信データのサイズが設定済みのバッファサイズと一致するか確認
     if (received_bytes != total_buffer_size) {
         std::cerr << "Error: Received data size mismatch!" << std::endl;
@@ -89,6 +109,11 @@ void UdpCommunicator::recive_thread_from_master(){
     
     while(!stop_flag){
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        
+        if (receiveddata_master.first.empty()) {
+            continue;  // 空データならスキップ
+        }
+        
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock
             if (!deque_master_.empty()){
@@ -105,6 +130,11 @@ void UdpCommunicator::recive_thread_from_copy(){
 
     while(!stop_flag){
         std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
+
+        if (receiveddata_copy.first.empty()) {
+            continue;  // 空データならスキップ
+        }
+
         {
             std::lock_guard<std::mutex> lock(queue_mutex_copy_); // lock
             if (!deque_copy_.empty()){
