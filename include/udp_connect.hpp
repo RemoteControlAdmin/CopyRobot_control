@@ -16,6 +16,8 @@
 #include <mutex>
 #include <deque>
 
+#include <common.hpp>
+
 namespace udp_lib{
 
 class UdpConnect{
