@@ -40,7 +40,7 @@ int main(){
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
-
+    udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
     /*
     * ローカル変数定義　local variable definition
     */
@@ -66,6 +66,12 @@ int main(){
     last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
     micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
     first_clock = micro_last_clock;
+
+    /*
+    * 受信スレッドの開始
+    */
+    std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
+    std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
     /*
     * ============== main roop ==============
     */

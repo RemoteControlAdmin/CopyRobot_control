@@ -51,7 +51,10 @@ class UdpCommunicator{
     * UDP communication processing class
     */
    public:
-        UdpCommunicator();
+        UdpCommunicator(std::deque<std::pair<std::vector<double>, int>>& deque_master, // address of deque_master
+            std::deque<std::pair<std::vector<double>, int>>& deque_copy,
+            std::mutex& queue_mutex_master,
+            std::mutex& queue_mutex_copy);
 
         void recive_thread_from_master();
         
