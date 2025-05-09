@@ -13,12 +13,15 @@
 #include <vector>
 #include <iterator>
 #include <chrono>
+#include <mutex>
+#include <deque>
 
 namespace udp_lib{
 
 class UdpConnect{
     /*
-    UDP送受信を行うクラス
+    * ===============UDP送受信設定クラス==============
+    * UDP communication settings class
     */
     int sock;
     struct sockaddr_in addr;
@@ -39,6 +42,29 @@ class UdpConnect{
         
         ~UdpConnect();
 };
+
+class UdpCommunicator{
+    /*
+    * ===============UDP通信処理クラス==============
+    * UDP communication processing class
+    */
+   public:
+        UdpCommunicator();
+
+        void recive_thread_from_master();
+        
+        void recive_thread_from_copy();
+
+        void send_function();
+        
+        ~UdpCommunicator();
+
+    private:
+        std::deque<std::pair<std::vector<double>, int>>& deque_master_;
+        std::deque<std::pair<std::vector<double>, int>>& deque_copy_;
+        std::mutex& queue_mutex_master_;
+        std::mutex& queue_mutex_copy_;
+}
 
 }
 

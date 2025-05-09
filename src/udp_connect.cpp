@@ -1,7 +1,11 @@
 #include "udp_connect.hpp"
 
 namespace udp_lib {
-
+/*
+* ===============UDP送受信設定クラス==============
+* UDP communication settings class
+* https://planet-louse-95d.notion.site/1c047abc426580638ceff46276d2df59?pvs=4
+*/
 // コンストラクタ
 UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
     /*
@@ -60,12 +64,62 @@ std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
     return {received_values, roop_count};
 }
 
-
 // デストラクタ
 UdpConnect::~UdpConnect() {
     delete[] buffer;  // 動的に確保したメモリを解放
     close(sock);
 }
 
+/*
+* ===============UDP通信処理クラス==============
+* UDP communication processing class
+*/
+// コンストラクタの実装
+UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int>>& deque_master, // address of deque_master
+                                std::deque<std::pair<std::vector<double>, int>>& deque_copy,
+                                std::mutex& queue_mutex_master,
+                                std::mutex& queue_mutex_copy) :
+                                deque_master_(deque_master), deque_copy_(deque_copy),
+                                queue_mutex_master_(queue_mutex_master), queue_mutex_copy_(queue_mutex_copy) {}
 
+
+void UdpCommunicator::recive_thread_from_master(){
+    UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
+    udpConnection_from_master.udp_bind();
+    
+    while(!stop_flag){
+        std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock
+            if (!deque_master_.empty()){
+                deque_master_.pop_front();
+            }
+            deque_master_.push_back(receiveddata_master);
+        }// unlock
+    }
 }
+
+void UdpCommunicator::recive_thread_from_copy(){
+    UdpConnect udpConnection_from_copy("0.0.0.0", 41000, 6); // from Copy Robot
+    udpConnection_from_copy.udp_bind();
+
+    while(!stop_flag){
+        std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_copy_); // lock
+            if (!deque_copy_.empty()){
+                deque_copy_.pop_front();
+            }
+            deque_copy_.push_back(receiveddata_copy);}
+        } // unlock
+}
+
+void UdpCommunicator::send_function(){
+    UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
+}
+// デストラクタの実装
+UdpCommunicator::~UdpCommunicator() {
+    // 必要なクリーンアップ処理をここに追加
+}
+
+} // namespace udp_lib

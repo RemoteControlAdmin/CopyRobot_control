@@ -1,4 +1,6 @@
 # include <thread>
+#include <deque>
+#include <mutex>
 # include <vector>
 # include <cmath>
 # include <iostream>
@@ -10,12 +12,6 @@
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
 
-//構造体定義
-RobotData robotdata;
-Mat3x1 mat3x1;
-Mat3X3 mat3x3;
-
-
 volatile std::sig_atomic_t stop_flag = 0; // グローバル変数として定義
 void end_task(int signum){
     if(signum == SIGINT) {
@@ -24,10 +20,20 @@ void end_task(int signum){
     }
 }
 
+
 int main(){
     // 強制終了処理　end proccess
     std::signal(SIGINT, end_task);
 
+    /*
+    * キュー作成
+    * make queue
+    */
+    std::deque<std::pair<std::vector<double>, int>> deque_master;
+    std::deque<std::pair<std::vector<double>, int>> deque_copy;
+    std::mutex queue_mutex_master;
+    std::mutex queue_mutex_copy;
+    
     /*
     * インスタンス作成 Instance creation
     */
@@ -37,17 +43,12 @@ int main(){
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
 
     /*
-    * UDP設定 UDP settings
-    * https://planet-louse-95d.notion.site/1c047abc426580638ceff46276d2df59?pvs=4
-    */
-    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
-    udp_lib::UdpConnect udpConnection_from_master("0.0.0.0", 40011, 6); // from Master Robot
-    udpConnection_from_master.udp_bind();
-    udp_lib::UdpConnect udpConnection_from_copy("0.0.0.0", 41031, 6); // from Copy Robot
-    udpConnection_from_copy.udp_bind();
-    /*
     * ローカル変数定義　local variable definition
     */
+    //構造体定義
+    RobotData robotdata;
+    Mat3x1 mat3x1;
+    Mat3X3 mat3x3;
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
     robotdata.last_err_data =  {0,0,0};     // initialize about last error data
     robotdata.master_data =  {0,0,0,0,0,0};     // initialize about last master data
@@ -72,12 +73,25 @@ int main(){
     while(!stop_flag){
         
         /*
-        * UDP受信 UDP recive
+        * queue取り出し
+        * get queue
         */
-        //std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
-        std::pair<std::vector<double>, int> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
-        //robotdata.master_data =receiveddata_master.first; // first is robot data, second is robot time information maked by raspberrypi
-        robotdata.copy_data = receiveddata_copy.first;
+        // master
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_master);
+            if (!deque_master.empty()){
+                robotdata.master_data = deque_master.front();
+                deque_master.pop_front();
+            }
+        } // unlock用
+        // copy
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_copy);
+            if (!deque_copy.empty()){
+                robotdata.copy_data = deque_copy.front();
+                deque_copy.pop_front();
+            }
+        } // unlock用
 
         /*
         *  data calculation about robot
