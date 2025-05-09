@@ -60,6 +60,7 @@ std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
     //データ受信
     size_t received_bytes = recvfrom(sock, buffer, total_buffer_size, 0, (struct sockaddr*)&sender_addr, &addr_len);
 
+    // ------------- タイムアウト処理 -------------
     if (received_bytes < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK) {
             // タイムアウト：データなし
@@ -69,6 +70,10 @@ std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
             exit(EXIT_FAILURE);
         }
     }
+    if (received_bytes == 0) {
+        return {};// 0の時はタイムアウトとみなす
+    }
+    //----------------------------------------
 
     // 受信データのサイズが設定済みのバッファサイズと一致するか確認
     if (received_bytes != total_buffer_size) {

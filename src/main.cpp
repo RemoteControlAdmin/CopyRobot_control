@@ -148,6 +148,8 @@ int main(){
     }
     // 終了前の後始末
     motor_control.DisableMotorDrive();
+    udp_thread_master.join(); // UDP receive thread from master
+    udp_thread_copy.join(); // UDP receive thread from copy
     std::cout << "[INFO] Program terminated gracefully." << std::endl;
     return 0;
 
