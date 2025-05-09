@@ -143,6 +143,7 @@ int main(){
 
         std::cout << "Mpx = "<< robotdata.master_data[0] << "Mpy = "<< robotdata.master_data[1] << "Mpt = "<< robotdata.master_data[2] << std::endl;
         std::cout << "Cpx = "<< robotdata.copy_data[0] << "Cpy = "<< robotdata.copy_data[1] << "Cpt = "<< robotdata.copy_data[2] << std::endl;
+        std::cout << "Errx = "<< robotdata.err_data[0] << "Erry = "<< robotdata.err_data[1] << "Errt = "<< robotdata.err_data[2] << std::endl;
         //std::cout << "dt = " << micro_dt.count() << std::endl;
 
     }
