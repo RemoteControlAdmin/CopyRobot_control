@@ -2,6 +2,7 @@
 #define COMMON_HPP
 
 #define _USE_MATH_DEFINES  // M_PIを使用するために必要
+#include <atomic>
 # include <vector>
 # include <cmath>
 #include <Eigen/Dense>
