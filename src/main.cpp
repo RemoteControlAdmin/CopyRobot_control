@@ -23,23 +23,23 @@ void end_task(int signum){
 void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
     std::cout << "================== show data ==================" << std::endl;
-    std::cout << std::left << std::setw(20) << ("| " + "Mpx = " + std::to_string(robotdata.master_data[0])) 
+    std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
               << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
-              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]) + "|")
+              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("| " + "Cpx = " + std::to_string(robotdata.copy_data[0])) 
+    std::cout << std::left << std::setw(20) << ("Cpx = " + std::to_string(robotdata.copy_data[0])) 
               << std::left << std::setw(20) << ("Cpy = " + std::to_string(robotdata.copy_data[1]))
-              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]) + "|")
+              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("| " + "Errx = " + std::to_string(robotdata.err_data[0])) 
+    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
               << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
-              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]) + "|")
+              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("| " + "Vx = " + std::to_string(velocity_data[0])) 
+    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
               << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
-              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2])+ "|")
+              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("| " +"dt = " + std::to_string(dt)) 
+    std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
               << std::endl;
     std::cout << "==============================================" << std::endl;
 }
