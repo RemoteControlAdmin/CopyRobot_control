@@ -20,25 +20,28 @@ void end_task(int signum){
     }
 }
 
-void show_data(RobotData robotdata, Eigen::Vector3d velocity_data){
+void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
     std::cout << "================== show data ==================" << std::endl;
-    std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
+    std::cout << std::left << std::setw(20) << ("| " + "Mpx = " + std::to_string(robotdata.master_data[0])) 
               << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
-              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
+              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]) + "|")
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("Cpx = " + std::to_string(robotdata.copy_data[0])) 
+    std::cout << std::left << std::setw(20) << ("| " + "Cpx = " + std::to_string(robotdata.copy_data[0])) 
               << std::left << std::setw(20) << ("Cpy = " + std::to_string(robotdata.copy_data[1]))
-              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]))
+              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]) + "|")
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
+    std::cout << std::left << std::setw(20) << ("| " + "Errx = " + std::to_string(robotdata.err_data[0])) 
               << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
-              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
+              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]) + "|")
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
+    std::cout << std::left << std::setw(20) << ("| " + "Vx = " + std::to_string(velocity_data[0])) 
               << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
-              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
+              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2])+ "|")
               << std::endl;
+    std::cout << std::left << std::setw(20) << ("| " +"dt = " + std::to_string(dt)) 
+              << std::endl;
+    std::cout << "==============================================" << std::endl;
 }
 
 
@@ -80,7 +83,7 @@ int main(){
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
-    std::chrono::microseconds dt(10*1000); // calculation cycle
+    std::chrono::microseconds dt(30*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // 最初の時刻
     /*
     * ============== 処理 process ==============
@@ -148,7 +151,7 @@ int main(){
 
         robotdata.last_err_data = robotdata.err_data;
 
-        
+        show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
         */
@@ -159,11 +162,8 @@ int main(){
             std::this_thread::sleep_for(dt - micro_dt);
         }
         current_clock = std::chrono::high_resolution_clock::now();
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
-            micro_dt = micro_current_clock - micro_last_clock;
         micro_last_clock = micro_current_clock;
-        //std::cout << "dt = " << micro_dt.count() << std::endl;
-        show_data(robotdata, mat3x1.velocity_data);
+        //std::cout << "dt = " << micro_dt.count() << std::endl
     }
     // 終了前の後始末
     udp_thread_master.join(); // UDP receive thread from master
