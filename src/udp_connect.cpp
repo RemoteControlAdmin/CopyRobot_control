@@ -112,6 +112,21 @@ void UdpCommunicator::recive_thread_from_master(){
     UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
     udpConnection_from_master.udp_bind();
     
+    std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
+    std::chrono::microseconds micro_last_clock; 
+    std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
+    std::chrono::microseconds micro_current_clock;
+    std::chrono::microseconds micro_dt; //dt
+    std::chrono::microseconds dt(30*1000); // calculation cycle
+    std::chrono::microseconds first_clock;  // 最初の時刻
+    /*
+    * ============== 処理 process ==============
+    */
+    last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
+    micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
+    first_clock = micro_last_clock;
+
+
     while(!stop_flag){
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         
@@ -126,6 +141,11 @@ void UdpCommunicator::recive_thread_from_master(){
             }
             deque_master_.push_back(receiveddata_master);
         }// unlock
+
+        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
+        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
+        micro_dt = micro_current_clock - micro_last_clock;
+        std::cout << "dt = " << micro_dt.count() << std::endl;
     }
 }
 

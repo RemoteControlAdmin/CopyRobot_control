@@ -163,7 +163,7 @@ int main(){
         }
         current_clock = std::chrono::high_resolution_clock::now();
         micro_last_clock = micro_current_clock;
-        std::cout << "dt = " << micro_dt.count() << std::endl;
+        //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
     udp_thread_master.join(); // UDP receive thread from master
