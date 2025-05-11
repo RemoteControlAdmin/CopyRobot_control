@@ -118,7 +118,7 @@ void UdpCommunicator::recive_thread_from_master(){
         if (receiveddata_master.first.empty()) {
             continue;  // 空データならスキップ
         }
-        std::cout << "master data: " << receiveddata_master << std::endl;
+        std::cout << "master data: " << receiveddata_master.first[0] << receiveddata_master.first[1] <<  std::endl;
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock
             if (!deque_master_.empty()){
