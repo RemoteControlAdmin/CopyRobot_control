@@ -127,7 +127,7 @@ int main(){
         *  data calculation about robot
         */
         robotdata = robot_data_cal.convert_robotdata(robotdata);    //Get MasterRobot's Position for manual path trajectory
-        robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
+        //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata);
         
         /*
