@@ -151,7 +151,7 @@ int main(){
 
         robotdata.last_err_data = robotdata.err_data;
 
-        show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        //show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
         */
