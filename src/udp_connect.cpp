@@ -145,6 +145,7 @@ void UdpCommunicator::recive_thread_from_master(){
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
         micro_dt = micro_current_clock - micro_last_clock;
+        micro_last_clock = micro_current_clock;
         std::cout << "dt = " << micro_dt.count() << std::endl;
     }
 }
