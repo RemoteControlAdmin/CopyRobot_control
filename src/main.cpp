@@ -139,13 +139,9 @@ int main(){
         current_clock = std::chrono::high_resolution_clock::now();
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());
             micro_dt = micro_current_clock - micro_last_clock;
-        micro_last_clock = micro_current_clock;
-
-        std::cout << "Mpx = "<< robotdata.master_data[0] << "Mpy = "<< robotdata.master_data[1] << "Mpt = "<< robotdata.master_data[2] << std::endl;
-        std::cout << "Cpx = "<< robotdata.copy_data[0] << "Cpy = "<< robotdata.copy_data[1] << "Cpt = "<< robotdata.copy_data[2] << std::endl;
-        std::cout << "Errx = "<< robotdata.err_data[0] << "Erry = "<< robotdata.err_data[1] << "Errt = "<< robotdata.err_data[2] << std::endl;
+        micro_last_clock = micro_current_clock:endl;
         //std::cout << "dt = " << micro_dt.count() << std::endl;
-
+        show_data(robotdata, mat3x1);
     }
     // 終了前の後始末
     udp_thread_master.join(); // UDP receive thread from master
@@ -154,4 +150,29 @@ int main(){
     std::cout << "[INFO] Program terminated gracefully." << std::endl;
     return 0;
 
+}
+
+void show_data(robotcontrol::RobotData robotdata, Mat3x1 mat3x1){
+    std::cout << "\033[2J\033[1;1H"; // Clear the console
+    std::cout << "================== show data ==================" << std::endl;
+    std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
+              << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
+              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Cpx = " + std::to_string(robotdata.copy_data[0])) 
+              << std::left << std::setw(20) << ("Cpy = " + std::to_string(robotdata.copy_data[1]))
+              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]))
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
+              << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
+              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
+              << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
+              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(mat3x1.velocity_data[0])) 
+              << std::left << std::setw(20) << ("Vy = " + std::to_string(mat3x1.velocity_data[1]))
+              << std::left << std::setw(20) << ("Vt = " + std::to_string(mat3x1.velocity_data[2]))
+              << std::endl;
 }
