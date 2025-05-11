@@ -153,7 +153,7 @@ int main(){
 
 }
 
-void show_data(RobotData robotdata, Mat3x1 mat3x1){
+void show_data(RobotData robotdata, Eigen::Vector3d velocity_data){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
     std::cout << "================== show data ==================" << std::endl;
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
@@ -168,8 +168,8 @@ void show_data(RobotData robotdata, Mat3x1 mat3x1){
               << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
               << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(mat3x1.velocity_data[0])) 
-              << std::left << std::setw(20) << ("Vy = " + std::to_string(mat3x1.velocity_data[1]))
-              << std::left << std::setw(20) << ("Vt = " + std::to_string(mat3x1.velocity_data[2]))
+    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
+              << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
+              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
               << std::endl;
 }
