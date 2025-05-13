@@ -125,8 +125,8 @@ void UdpCommunicator::recive_thread_from_master(){
     last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
     micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
     first_clock = micro_last_clock;
-
-    csv_lib::Csvedit csvWriter(fileName);
+    
+    csv_lib::Csvedit csvWriter("test.csv");
     csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
     std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
     while(!stop_flag){
