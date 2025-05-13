@@ -1,5 +1,5 @@
 #include "udp_connect.hpp"
-
+#include "csv_edit.hpp"
 namespace udp_lib {
 /*
 * ===============UDP送受信設定クラス==============
@@ -126,7 +126,9 @@ void UdpCommunicator::recive_thread_from_master(){
     micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
     first_clock = micro_last_clock;
 
-
+    csv_lib::Csvedit csvWriter(fileName);
+    csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
+    std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
     while(!stop_flag){
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         
@@ -145,6 +147,8 @@ void UdpCommunicator::recive_thread_from_master(){
 
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
+        csv_data = {receiveddata_master, micro_current_clock};
+        csvWriter.csv_write_data(csv_data);
         micro_dt = micro_current_clock - micro_last_clock;
         micro_last_clock = micro_current_clock;
         std::cout << "udo_dt = " << micro_dt.count() << std::endl;
