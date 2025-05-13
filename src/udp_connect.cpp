@@ -133,7 +133,8 @@ void UdpCommunicator::recive_thread_from_master(){
         if (receiveddata_master.first.empty()) {
             continue;  // 空データならスキップ
         }
-        std::cout << "master data: " << receiveddata_master.first[0] << receiveddata_master.first[1] <<  std::endl;
+        //std::cout << "master data: " << receiveddata_master.first[0] << std::endl;
+	//std::cout << "count" << receiveddata_master.second << std::endl;
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock
             if (!deque_master_.empty()){
@@ -146,7 +147,7 @@ void UdpCommunicator::recive_thread_from_master(){
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
         micro_dt = micro_current_clock - micro_last_clock;
         micro_last_clock = micro_current_clock;
-        std::cout << "dt = " << micro_dt.count() << std::endl;
+        std::cout << "udo_dt = " << micro_dt.count() << std::endl;
     }
 }
 

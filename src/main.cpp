@@ -77,6 +77,9 @@ int main(){
     robotdata.last_err_data =  {0,0,0};     // initialize about last error data
     robotdata.master_data =  {0,0,0,0,0,0};     // initialize about last master data
     robotdata.copy_data =  {0,0,0,0,0,0};     // initialize about last copy data
+
+    std::vector<double> last_master_data = {0,0,0,0,0,0};
+    std::vector<double> last_copy_data = {0,0,0,0,0,0};
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
@@ -111,7 +114,11 @@ int main(){
             std::lock_guard<std::mutex> lock(queue_mutex_master);
             if (!deque_master.empty()){
                 robotdata.master_data = deque_master.front().first;
-                deque_master.pop_front();
+                last_master_data = robotdata.master_data;
+		deque_master.pop_front();
+            }
+	    else{
+	    	robotdata.master_data = last_master_data;
             }
         } // unlock用
         // copy
@@ -119,8 +126,12 @@ int main(){
             std::lock_guard<std::mutex> lock(queue_mutex_copy);
             if (!deque_copy.empty()){
                 robotdata.copy_data = deque_copy.front().first;
+		last_copy_data = robotdata.copy_data;
                 deque_copy.pop_front();
             }
+	    else{
+	    	robotdata.copy_data = last_copy_data;
+	    }
         } // unlock用
 
         /*
@@ -162,7 +173,9 @@ int main(){
             std::this_thread::sleep_for(dt - micro_dt);
         }
         current_clock = std::chrono::high_resolution_clock::now();
-        micro_last_clock = micro_current_clock;
+        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
+	micro_dt = micro_current_clock - micro_last_clock;
+	micro_last_clock = micro_current_clock;
         //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
