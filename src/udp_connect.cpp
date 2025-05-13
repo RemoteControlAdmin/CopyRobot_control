@@ -151,7 +151,7 @@ void UdpCommunicator::recive_thread_from_master(){
         csvWriter.csv_write_data(csv_data);
         micro_dt = micro_current_clock - micro_last_clock;
         micro_last_clock = micro_current_clock;
-        std::cout << "udo_dt = " << micro_dt.count() << std::endl;
+        //std::cout << "udo_dt = " << micro_dt.count() << std::endl;
     }
 }
 
