@@ -111,14 +111,13 @@ UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int>>
 void UdpCommunicator::recive_thread_from_master(){
     UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
     udpConnection_from_master.udp_bind();
-    
+    /* 受信周期確認用
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
-    std::chrono::microseconds dt(30*1000); // calculation cycle
-    std::chrono::microseconds first_clock;  // 最初の時刻
+    std::chrono::microseconds first_clock;  // 最初の時刻*/
     /*
     * ============== 処理 process ==============
     */
@@ -126,9 +125,9 @@ void UdpCommunicator::recive_thread_from_master(){
     micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
     first_clock = micro_last_clock;
     
-    csv_lib::Csvedit csvWriter("test.csv");
-    csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
-    std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
+    //csv_lib::Csvedit csvWriter("test.csv");
+    //csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
+    //std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
     while(!stop_flag){
         std::pair<std::vector<double>, int> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         
@@ -145,12 +144,12 @@ void UdpCommunicator::recive_thread_from_master(){
             deque_master_.push_back(receiveddata_master);
         }// unlock
 
-        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-        csv_data = {receiveddata_master, micro_current_clock};
-        csvWriter.csv_write_data(csv_data);
-        micro_dt = micro_current_clock - micro_last_clock;
-        micro_last_clock = micro_current_clock;
+        //current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
+        //micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
+        //csv_data = {receiveddata_master, micro_current_clock};
+        //csvWriter.csv_write_data(csv_data);
+        //micro_dt = micro_current_clock - micro_last_clock;
+        //micro_last_clock = micro_current_clock;
         //std::cout << "udo_dt = " << micro_dt.count() << std::endl;
     }
 }

@@ -22,7 +22,7 @@ void end_task(int signum){
 
 void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
-    std::cout << "================== show data ==================" << std::endl;
+    std::cout << "================== show data ==================" << std::endl;/*
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
               << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
               << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
@@ -38,7 +38,7 @@ void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
               << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
               << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
-              << std::endl;
+              << std::endl;*/
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
               << std::endl;
     std::cout << "==============================================" << std::endl;
@@ -87,7 +87,7 @@ int main(){
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
     std::chrono::microseconds dt(30*1000); // calculation cycle
-    std::chrono::microseconds first_clock;  // 最初の時刻
+    std::chrono::microseconds first_clock;  // first clock
     /*
     * ============== 処理 process ==============
     */
