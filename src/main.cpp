@@ -53,8 +53,8 @@ int main(){
     * キュー作成
     * make queue
     */
-    std::deque<std::pair<std::vector<double>, int>> deque_master;
-    std::deque<std::pair<std::vector<double>, int>> deque_copy;
+    std::deque<std::pair<std::vector<double>, long>> deque_master;
+    std::deque<std::pair<std::vector<double>, long>> deque_copy;
     std::mutex queue_mutex_master;
     std::mutex queue_mutex_copy;
     
@@ -174,8 +174,8 @@ int main(){
         }
         current_clock = std::chrono::high_resolution_clock::now();
         micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-	micro_dt = micro_current_clock - micro_last_clock;
-	micro_last_clock = micro_current_clock;
+        micro_dt = micro_current_clock - micro_last_clock;
+        micro_last_clock = micro_current_clock;
         //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
