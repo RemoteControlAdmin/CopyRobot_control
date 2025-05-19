@@ -66,9 +66,11 @@ int main(){
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
+    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 65000, 6); // UDP初期化
     /*
     * ローカル変数定義　local variable definition
     */
+    long send_time;
     //構造体定義
     RobotData robotdata;
     Mat3x1 mat3x1;
@@ -114,6 +116,7 @@ int main(){
             std::lock_guard<std::mutex> lock(queue_mutex_master);
             if (!deque_master.empty()){
                 robotdata.master_data = deque_master.front().first;
+                send_time = deque_master.front().second;
                 last_master_data = robotdata.master_data;
 		deque_master.pop_front();
             }
@@ -162,6 +165,8 @@ int main(){
 
         robotdata.last_err_data = robotdata.err_data;
 
+        // デバック用
+        udpConnection_raspberrypi.udp_send(robotdata.master_data, send_time);
         show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
