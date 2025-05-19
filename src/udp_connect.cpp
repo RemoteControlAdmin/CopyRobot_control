@@ -144,7 +144,7 @@ void UdpCommunicator::recive_thread_from_master(){
             }
             deque_master_.push_back(receiveddata_master);
         }// unlock
-        udpConnection_raspberrypi.udp_send(receivedData.first, receivedData.second);
+        udpConnection_raspberrypi.udp_send(receiveddata_master.first, receiveddata_master.second);
         //current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         //micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
         //csv_data = {receiveddata_master, micro_current_clock};
