@@ -32,16 +32,16 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
     
     //bufferの値を定義
     buffer_size = element_count * sizeof(double);
-    total_buffer_size = buffer_size + sizeof(long);
+    total_buffer_size = buffer_size + sizeof(int64_t);
     buffer = new char [total_buffer_size];
 }
 
 // UDP送信関数（double型データを送信）
-void UdpConnect::udp_send(const std::vector<double>& values, long roop_count) {
+void UdpConnect::udp_send(const std::vector<double>& values, int64_t roop_count) {
     // valuesの値をbafferにコピー
     std::memcpy(buffer, values.data(), buffer_size);
     // nano_system_clockをbafferの末尾にコピー
-    std::memcpy(buffer + values.size() * sizeof(double), &roop_count, sizeof(long)); // ＋で末尾に移動
+    std::memcpy(buffer + values.size() * sizeof(double), &roop_count, sizeof(int64_t)); // ＋で末尾に移動
     sendto(sock, buffer, total_buffer_size, 0, (struct sockaddr *)&addr, sizeof(addr));
 }
 
@@ -54,7 +54,7 @@ void UdpConnect::udp_bind() {
 }
 
 // UDP受信関数（double型データを受信）
-std::pair<std::vector<double>, long> UdpConnect::udp_recv() {
+std::pair<std::vector<double>, int64_t> UdpConnect::udp_recv() {
     struct sockaddr_in sender_addr;
     socklen_t addr_len = sizeof(sender_addr);
     //データ受信
@@ -84,8 +84,8 @@ std::pair<std::vector<double>, long> UdpConnect::udp_recv() {
     std::vector<double> received_values(buffer_size / sizeof(double));
     std::memcpy(received_values.data(), buffer, buffer_size);
 
-    long roop_count;
-    std::memcpy(&roop_count, buffer + buffer_size, sizeof(long));
+    int64_t roop_count;
+    std::memcpy(&roop_count, buffer + buffer_size, sizeof(int64_t));
     return {received_values, roop_count};
 }
 
@@ -100,8 +100,8 @@ UdpConnect::~UdpConnect() {
 * UDP communication processing class
 */
 // コンストラクタの実装
-UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, long>>& deque_master, // address of deque_master
-                                std::deque<std::pair<std::vector<double>, long>>& deque_copy,
+UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64_t>>& deque_master, // address of deque_master
+                                std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy,
                                 std::mutex& queue_mutex_master,
                                 std::mutex& queue_mutex_copy) :
                                 deque_master_(deque_master), deque_copy_(deque_copy),
@@ -130,7 +130,7 @@ void UdpCommunicator::recive_thread_from_master(){
     //csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
     //std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
     while(!stop_flag){
-        std::pair<std::vector<double>, long> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        std::pair<std::vector<double>, int64_t> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
         
         if (receiveddata_master.first.empty()) {
             continue;  // 空データならスキップ
@@ -160,7 +160,7 @@ void UdpCommunicator::recive_thread_from_copy(){
     udpConnection_from_copy.udp_bind();
 
     while(!stop_flag){
-        std::pair<std::vector<double>, long> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
+        std::pair<std::vector<double>, int64_t> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
 
         if (receiveddata_copy.first.empty()) {
             continue;  // 空データならスキップ
