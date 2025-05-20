@@ -53,8 +53,8 @@ int main(){
     * キュー作成
     * make queue
     */
-    std::deque<std::pair<std::vector<double>, long>> deque_master;
-    std::deque<std::pair<std::vector<double>, long>> deque_copy;
+    std::deque<std::pair<std::vector<double>, int64_t>> deque_master;
+    std::deque<std::pair<std::vector<double>, int64_t>> deque_copy;
     std::mutex queue_mutex_master;
     std::mutex queue_mutex_copy;
     
@@ -70,7 +70,7 @@ int main(){
     /*
     * ローカル変数定義　local variable definition
     */
-    long send_time;
+    int64_t send_time;
     //構造体定義
     RobotData robotdata;
     Mat3x1 mat3x1;
