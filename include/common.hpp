@@ -2,6 +2,7 @@
 #define COMMON_HPP
 
 #define _USE_MATH_DEFINES  // M_PIを使用するために必要
+#include <atomic>
 # include <vector>
 # include <cmath>
 #include <Eigen/Dense>
@@ -10,6 +11,10 @@
 #include <fcntl.h>    // open, O_WRONLYなど
 #include <unistd.h>   // close, writeなど
 #include <string.h>   // strlenなど（文字列処理）
+#include <csignal>
+
+
+extern std::atomic<bool> stop_flag;
 
 struct RobotData {
     std::vector<double> master_data;

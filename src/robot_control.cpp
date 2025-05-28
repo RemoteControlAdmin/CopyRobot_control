@@ -6,9 +6,9 @@ namespace robotcontrol{
     RobotControl::RobotControl(){
         Integral = std::vector<double> {0,0,0};
         Derivative = std::vector<double> {0,0,0};
-        Kp = 1.5;
-        Ki = 0.015;
-        Kd = 0;
+        Kp = 25; // medium 6.5 high 25
+        Ki = 0.02;
+        Kd = 17; // medium 2.5 high 17
     }
     //private
     // public

@@ -1,7 +1,11 @@
 #include "udp_connect.hpp"
-
+#include "csv_edit.hpp"
 namespace udp_lib {
-
+/*
+* ===============UDP送受信設定クラス==============
+* UDP communication settings class
+* https://planet-louse-95d.notion.site/1c047abc426580638ceff46276d2df59?pvs=4
+*/
 // コンストラクタ
 UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
     /*
@@ -13,22 +17,31 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
         exit(EXIT_FAILURE);
     }
 
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 50000;  // 50ミリ秒（必要に応じて調整）
+    
+    if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
+        perror("Error setting socket timeout");
+        exit(EXIT_FAILURE);
+    }
+
     addr.sin_family = AF_INET;
     addr.sin_addr.s_addr = inet_addr(address.c_str());
     addr.sin_port = htons(port);
     
     //bufferの値を定義
     buffer_size = element_count * sizeof(double);
-    total_buffer_size = buffer_size + sizeof(int);
+    total_buffer_size = buffer_size + sizeof(int64_t);
     buffer = new char [total_buffer_size];
 }
 
 // UDP送信関数（double型データを送信）
-void UdpConnect::udp_send(const std::vector<double>& values, int roop_count) {
+void UdpConnect::udp_send(const std::vector<double>& values, int64_t roop_count) {
     // valuesの値をbafferにコピー
     std::memcpy(buffer, values.data(), buffer_size);
     // nano_system_clockをbafferの末尾にコピー
-    std::memcpy(buffer + values.size() * sizeof(double), &roop_count, sizeof(int)); // ＋で末尾に移動
+    std::memcpy(buffer + values.size() * sizeof(double), &roop_count, sizeof(int64_t)); // ＋で末尾に移動
     sendto(sock, buffer, total_buffer_size, 0, (struct sockaddr *)&addr, sizeof(addr));
 }
 
@@ -41,11 +54,27 @@ void UdpConnect::udp_bind() {
 }
 
 // UDP受信関数（double型データを受信）
-std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
+std::pair<std::vector<double>, int64_t> UdpConnect::udp_recv() {
     struct sockaddr_in sender_addr;
     socklen_t addr_len = sizeof(sender_addr);
     //データ受信
     size_t received_bytes = recvfrom(sock, buffer, total_buffer_size, 0, (struct sockaddr*)&sender_addr, &addr_len);
+
+    // ------------- タイムアウト処理 -------------
+    if (received_bytes < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            // タイムアウト：データなし
+            return {};  // 空データを返す
+        } else {
+            perror("recvfrom failed");
+            exit(EXIT_FAILURE);
+        }
+    }
+    if (received_bytes == 0) {
+        return {};// 0の時はタイムアウトとみなす
+    }
+    //----------------------------------------
+
     // 受信データのサイズが設定済みのバッファサイズと一致するか確認
     if (received_bytes != total_buffer_size) {
         std::cerr << "Error: Received data size mismatch!" << std::endl;
@@ -55,11 +84,10 @@ std::pair<std::vector<double>, int> UdpConnect::udp_recv() {
     std::vector<double> received_values(buffer_size / sizeof(double));
     std::memcpy(received_values.data(), buffer, buffer_size);
 
-    int roop_count;
-    std::memcpy(&roop_count, buffer + buffer_size, sizeof(int));
+    int64_t roop_count;
+    std::memcpy(&roop_count, buffer + buffer_size, sizeof(int64_t));
     return {received_values, roop_count};
 }
-
 
 // デストラクタ
 UdpConnect::~UdpConnect() {
@@ -67,5 +95,90 @@ UdpConnect::~UdpConnect() {
     close(sock);
 }
 
+/*
+* ===============UDP通信処理クラス==============
+* UDP communication processing class
+*/
+// コンストラクタの実装
+UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64_t>>& deque_master, // address of deque_master
+                                std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy,
+                                std::mutex& queue_mutex_master,
+                                std::mutex& queue_mutex_copy) :
+                                deque_master_(deque_master), deque_copy_(deque_copy),
+                                queue_mutex_master_(queue_mutex_master), queue_mutex_copy_(queue_mutex_copy) {}
 
+
+void UdpCommunicator::recive_thread_from_master(){
+    UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
+    udpConnection_from_master.udp_bind();
+    /* 受信周期確認用
+    std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
+    std::chrono::microseconds micro_last_clock; 
+    std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
+    std::chrono::microseconds micro_current_clock;
+    std::chrono::microseconds micro_dt; //dt
+    std::chrono::microseconds first_clock;  // 最初の時刻*/
+    /*
+    * ============== 処理 process ==============
+    */
+    //last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
+    //micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
+    //first_clock = micro_last_clock;
+    
+    //csv_lib::Csvedit csvWriter("test.csv");
+    //csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
+    //std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
+    while(!stop_flag){
+        std::pair<std::vector<double>, int64_t> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
+        
+        if (receiveddata_master.first.empty()) {
+            continue;  // 空データならスキップ
+        }
+        //std::cout << "master data: " << receiveddata_master.first[0] << std::endl;
+	    //std::cout << "count" << receiveddata_master.second << std::endl;
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock
+            if (!deque_master_.empty()){
+                deque_master_.pop_front();
+            }
+            deque_master_.push_back(receiveddata_master);
+        }// unlock
+        //current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
+        //micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
+        //csv_data = {receiveddata_master, micro_current_clock};
+        //csvWriter.csv_write_data(csv_data);
+        //micro_dt = micro_current_clock - micro_last_clock;
+        //micro_last_clock = micro_current_clock;
+        //std::cout << "udo_dt = " << micro_dt.count() << std::endl;
+    }
 }
+
+void UdpCommunicator::recive_thread_from_copy(){
+    UdpConnect udpConnection_from_copy("0.0.0.0", 41000, 6); // from Copy Robot
+    udpConnection_from_copy.udp_bind();
+
+    while(!stop_flag){
+        std::pair<std::vector<double>, int64_t> receiveddata_copy = udpConnection_from_copy.udp_recv();     // from copy robot (own)
+
+        if (receiveddata_copy.first.empty()) {
+            continue;  // 空データならスキップ
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_copy_); // lock
+            if (!deque_copy_.empty()){
+                deque_copy_.pop_front();
+            }
+            deque_copy_.push_back(receiveddata_copy);}
+        } // unlock
+}
+
+void UdpCommunicator::send_function(){
+    UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
+}
+// デストラクタの実装
+UdpCommunicator::~UdpCommunicator() {
+    // 必要なクリーンアップ処理をここに追加
+}
+
+} // namespace udp_lib

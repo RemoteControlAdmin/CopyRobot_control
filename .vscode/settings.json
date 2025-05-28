@@ -57,7 +57,13 @@
     "xtr1common": "cpp",
     "xutility": "cpp",
     "stop_token": "cpp",
-    "thread": "cpp"
+    "thread": "cpp",
+    "algorithm": "cpp",
+    "csignal": "cpp",
+    "deque": "cpp",
+    "mutex": "cpp",
+    "queue": "cpp",
+    "fstream": "cpp"
   },
   "C_Cpp.errorSquiggles": "disabled"
 }
