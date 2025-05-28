@@ -109,7 +109,6 @@ UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64
 
 
 void UdpCommunicator::recive_thread_from_master(){
-    UdpConnect udpConnection_raspberrypi("192.168.11.29", 64000, 6); // UDP初期化
     UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
     udpConnection_from_master.udp_bind();
     /* 受信周期確認用
@@ -144,7 +143,6 @@ void UdpCommunicator::recive_thread_from_master(){
             }
             deque_master_.push_back(receiveddata_master);
         }// unlock
-        udpConnection_raspberrypi.udp_send(receiveddata_master.first, receiveddata_master.second);
         //current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         //micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
         //csv_data = {receiveddata_master, micro_current_clock};
