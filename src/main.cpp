@@ -89,7 +89,7 @@ int main(){
     std::vector<double> last_copy_data = {0,0,0};
     std::vector<double> last_partner_master_data = {0,0,0};
     // 一時的にcopyとpartnerのデータを保持するための変数
-    std::vector<double> temp_copy_data = {0,0,0,0,0,0};
+    std::vector<double> temp_copy_data = {0,0,0,0,0,0,0,0,0,0,0,0};
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
