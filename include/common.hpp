@@ -24,8 +24,8 @@ struct RobotData {
     std::array<double,3> last_err_data{0, 0, 0};
 
     std::vector<double> force_actual_data{0, 0};
-    std::pair<std::vector<double>,bool> force_virtual_data{{0.0, 0.0, 0.0}, false};
-    std::pair<std::vector<double>,bool> force_ideal_data{{0.0, 0.0, 0.0},false};
+    std::pair<std::vector<double>,bool> force_virtual_data{{0.0, 0.0, 0.0, 0.0, 0.0}, false};
+    std::pair<std::vector<double>,bool> force_ideal_data{{0.0, 0.0, 0.0, 0.0, 0.0},false};
 };
 
 struct Mat3x1 {
