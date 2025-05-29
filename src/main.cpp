@@ -1,16 +1,17 @@
 # include <thread>
-#include <deque>
-#include <mutex>
+# include <deque>
+# include <mutex>
 # include <vector>
 # include <cmath>
 # include <iostream>
-#include <iomanip>
+# include <iomanip>
 # include "common.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
 # include "robot_control.hpp"
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
+# include "force_get.cpp"
 
 std::atomic<bool> stop_flag(false);// グローバル変数として定義
 void end_task(int signum){
@@ -65,6 +66,8 @@ int main(){
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
+    forceget::ForceActual force_actual{}; // force actual
+    forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
     udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 65000, 6); // UDP初期化
     /*
@@ -76,12 +79,13 @@ int main(){
     Mat3x1 mat3x1;
     Mat3X3 mat3x3;
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
-    robotdata.last_err_data =  {0,0,0};     // initialize about last error data
-    robotdata.master_data =  {0,0,0,0,0,0};     // initialize about last master data
-    robotdata.copy_data =  {0,0,0,0,0,0};     // initialize about last copy data
 
-    std::vector<double> last_master_data = {0,0,0,0,0,0};
-    std::vector<double> last_copy_data = {0,0,0,0,0,0};
+    // udpが受信できなかった際に使用するデータ
+    std::vector<double> last_master_data = {0,0,0};
+    std::vector<double> last_copy_data = {0,0,0};
+    std::vector<double> last_partner_master_data = {0,0,0};
+    // 一時的にcopyとpartnerのデータを保持するための変数
+    std::vector<double> temp_copy_data = {0,0,0,0,0,0};
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
@@ -106,7 +110,6 @@ int main(){
     * ============== main roop ==============
     */
     while(!stop_flag){
-        
         /*
         * queue取り出し
         * get queue
@@ -118,25 +121,34 @@ int main(){
                 robotdata.master_data = deque_master.front().first;
                 send_time = deque_master.front().second;
                 last_master_data = robotdata.master_data;
-		deque_master.pop_front();
+                deque_master.pop_front();
             }
-	    else{
-	    	robotdata.master_data = last_master_data;
+            else{
+                robotdata.master_data = last_master_data;
             }
         } // unlock用
         // copy
         {
             std::lock_guard<std::mutex> lock(queue_mutex_copy);
             if (!deque_copy.empty()){
-                robotdata.copy_data = deque_copy.front().first;
-		last_copy_data = robotdata.copy_data;
+                temp_copy_data = deque_copy.front().first;
+                robotdata.copy_data.assign(temp_copy_data.begin(), temp_copy_data.begin()+3);
+                robotdata.partner_master_data.assign(temp_copy_data.begin()+3, temp_copy_data.end());
+                last_copy_data = robotdata.copy_data;
+                last_partner_master_data = robotdata.partner_master_data;
                 deque_copy.pop_front();
             }
-	    else{
-	    	robotdata.copy_data = last_copy_data;
-	    }
+	        else{
+	    	    robotdata.copy_data = last_copy_data;
+                robotdata.partner_master_data = last_partner_master_data;
+            }
         } // unlock用
-
+        /*
+        *  force getting
+        */
+        robotdata.force_actual_data = force_actual.FEActCal();
+        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
+        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
         /*
         *  data calculation about robot
         */

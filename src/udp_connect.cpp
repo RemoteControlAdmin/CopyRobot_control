@@ -109,7 +109,7 @@ UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64
 
 
 void UdpCommunicator::recive_thread_from_master(){
-    UdpConnect udpConnection_from_master("0.0.0.0", 40000, 6); // from Master Robot
+    UdpConnect udpConnection_from_master("0.0.0.0", 40000, 3); // from Master Robot
     udpConnection_from_master.udp_bind();
     /* 受信周期確認用
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
