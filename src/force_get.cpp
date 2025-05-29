@@ -3,7 +3,7 @@
 namespace forceget { 
     ForceActual::ForceActual(){} //コンストラクタ
 
-    int* ForceActual::ReadAnalogInputs(){ // 関数（任意の名前）
+    std::vector<int> ForceActual::ReadAnalogInputs(){ // 関数（任意の名前）
         ///Read raw signal from the sensor
         FILE *Analog_files[4];                                      //Number Analog Input Pin to Read [AI0-AI3]
         const char *Analog_Files_Paths[4] = {                       //ADC file paths [AI0-AI3]
@@ -12,12 +12,8 @@ namespace forceget {
             "/sys/bus/iio/devices/iio:device0/in_voltage2_raw",     //Path AI2
             "/sys/bus/iio/devices/iio:device0/in_voltage3_raw",     //Path AI3
         };
-        //Memory allocation error
-        int* Analog_Val = (int*)malloc(4 * sizeof(int));
-        if (Analog_Val == NULL) {
-            perror("Memory allocation error");
-            exit(EXIT_FAILURE);
-        }
+        std::vector<int> Analog_Val(4, 0);
+
         //Open files for reading
         for (int i=0;i<4;i++) {
             Analog_files[i] = fopen(Analog_Files_Paths[i],"r");
@@ -37,25 +33,25 @@ namespace forceget {
         for (int i=0;i<4;i++) {
             fclose(Analog_files[i]);
         }
-        return Analog_Val;
+        return Analog_Val
     }
     
     std::vector<double> ForceActual::FEActCal(){
-        Analog_Val = ReadAnalogInputs();
-        ADC_AI0=Analog_Val[0];  //FAx
-        ADC_AI2=Analog_Val[2];  //FAy
-        ADC_AI1=Analog_Val[1];  //FBx
-        ADC_AI3=Analog_Val[3];  //FBy
+        std::vector<int> analog_vals  = ReadAnalogInputs();
+        ADC_AI0=analog_vals[0];  //FAx
+        ADC_AI2=analog_vals[2];  //FAy
+        ADC_AI1=analog_vals[1];  //FBx
+        ADC_AI3=analog_vals[3];  //FBy
         //Analog Read in Voltage Values
-        Volt0=Analog_Val[0]*(1.8/4096);     //FAx
-        Volt2=Analog_Val[2]*(1.8/4096);     //FAy
-        Volt1=Analog_Val[1]*(1.8/4096);     //FBx
-        Volt3=Analog_Val[3]*(1.8/4096);     //FBy
+        Volt0=analog_vals[0]*(1.8/4096);     //FAx
+        Volt2=analog_vals[2]*(1.8/4096);     //FAy
+        Volt1=analog_vals[1]*(1.8/4096);     //FBx
+        Volt3=analog_vals[3]*(1.8/4096);     //FBy
         //Analog Read in Newton Values
-        FAx=(Analog_Val[0]*(1.8/4096))*15.5038-16.7597;  //FAx
-        FAy=(Analog_Val[2]*(1.8/4096))*15.5038-16.7597;  //FAy
-        FBx=(Analog_Val[1]*(1.8/4096))*15.5038-16.8527;  //FBx
-        FBy=(Analog_Val[3]*(1.8/4096))*15.5038-16.7597;  //FBy 
+        FAx=(analog_vals[0]*(1.8/4096))*15.5038-16.7597;  //FAx
+        FAy=(analog_vals[2]*(1.8/4096))*15.5038-16.7597;  //FAy
+        FBx=(analog_vals[1]*(1.8/4096))*15.5038-16.8527;  //FBx
+        FBy=(analog_vals[3]*(1.8/4096))*15.5038-16.7597;  //FBy 
         //Digital Lowpass Filter
         fFAx = a*fFAx+b*FAx;    //fc=10Hz Ts=0.01s
         fFAy = a*fFAy+b*FAy;    //fc=10Hz Ts=0.01s

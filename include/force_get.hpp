@@ -20,7 +20,6 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     
     private: // 以下private関数と変数の宣言
     //===========Declaration the force sensor communication===========
-    int* Analog_Val; // アナログ入力値を格納する変数の宣言
     int ADC_AI0,ADC_AI1,ADC_AI2,ADC_AI3; // アナログ入力のインデックスを格納する変数の宣言
     double Volt0, Volt1, Volt2, Volt3; // アナログ入力の電圧値を格納する変数の宣言
     double FAx, FAy, FBx, FBy; // 力センサーの値を格納する変数の宣言
