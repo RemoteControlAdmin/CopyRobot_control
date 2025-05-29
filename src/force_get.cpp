@@ -1,7 +1,7 @@
 # include "force_get.hpp"
 
 namespace forceget { 
-    ForceActual::ForceGet(){} //コンストラクタ
+    ForceActual::ForceActual(){} //コンストラクタ
 
     int* ForceActual::ReadAnalogInputs(){ // 関数（任意の名前）
         ///Read raw signal from the sensor
@@ -27,14 +27,14 @@ namespace forceget {
             }
         }
         //Read analog input values
-        for (i=0;i<4;i++) {
+        for (int i=0;i<4;i++) {
             int Value;
             rewind(Analog_files[i]); // Move the file pointer to the beginning
             fscanf(Analog_files[i],"%d",&Value);
             Analog_Val[i]=Value;
         }
         //Close files
-        for (i=0;i<4;i++) {
+        for (int i=0;i<4;i++) {
             fclose(Analog_files[i]);
         }
         return Analog_Val;
@@ -109,8 +109,7 @@ namespace forceget {
         FEacty =F_G*sin(Fa_G);}
         FEactNull =0;
 
-        force_actual_data = {FEactM,FEactMa}; // 力環境の実際の値を格納するベクトル
-        return force_actual_data;
+        return {FEactM,FEactMa};
     }
 
     //Replace a angle of actual force from the robot frame to the global frame [FEa]=FEa(A_MRDisplacement)

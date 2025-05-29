@@ -10,7 +10,7 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
 
     public: // 以下public関数と変数の宣言
 
-    ForceSensor(); // コンストラクタの宣言
+    ForceActual(); // コンストラクタの宣言
 
     int* ReadAnalogInputs(); // 関数の宣言
     
@@ -21,7 +21,6 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     private: // 以下private関数と変数の宣言
     //===========Declaration the force sensor communication===========
     int* Analog_Val; // アナログ入力値を格納する変数の宣言
-    double Kspring = 16.000/0.020; // N/m (800 N/m)
     int ADC_AI0,ADC_AI1,ADC_AI2,ADC_AI3; // アナログ入力のインデックスを格納する変数の宣言
     double Volt0, Volt1, Volt2, Volt3; // アナログ入力の電圧値を格納する変数の宣言
     double FAx, FAy, FBx, FBy; // 力センサーの値を格納する変数の宣言
@@ -44,13 +43,14 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     public: // 以下public関数と変数の宣言
 
     ForceIdeal(); // コンストラクタの宣言
-    std::pair<std::vector<double>,bool>  FIdCal(std::vector<double> partner_master_data, std::vector<double> copy_data); // 力理想値を計算する関数の宣言
-    std::pair<std::vector<double>,bool> FEVirCal(td::vector<double> partner_master_data, std::vector<double> master_data); // 力環境の仮想値を計算する関数の宣言
+    std::pair<std::vector<double>,bool> FIdCal(std::vector<double> partner_master_data, std::vector<double> copy_data); // 力理想値を計算する関数の宣言
+    std::pair<std::vector<double>,bool> FEVirCal(std::vector<double> partner_master_data, std::vector<double> master_data); // 力環境の仮想値を計算する関数の宣言
     //double ForceCompensateCal(); // 力補償を計算する関数の宣言
 
 
 
     private: // 以下private関数と変数の宣言
+    double Kspring = 16.000/0.020; // N/m (800 N/m)
     double DIde,A_DIde,FIdeal,A_FIdeal;
     double DVir,A_DVir,FEVir,A_FEVir;
     int MRTouchChk,CRTouchChk;
