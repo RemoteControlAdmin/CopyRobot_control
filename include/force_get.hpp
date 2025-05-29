@@ -12,7 +12,7 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
 
     ForceActual(); // コンストラクタの宣言
 
-    int* ReadAnalogInputs(); // 関数の宣言
+    std::vector<int> ReadAnalogInputs(); // 関数の宣言
     
     std::vector<double> FEActCal(); // 力環境の実際の値を計算する関数の宣言
 
