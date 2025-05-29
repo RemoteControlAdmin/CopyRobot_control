@@ -19,6 +19,7 @@ namespace robotcontrol{
     RobotData RobotDataCal::convert_robotdata(RobotData robotdata){
         robotdata.master_data = RobotDataCal::convert_m_rad(robotdata.master_data);
         robotdata.copy_data = RobotDataCal::convert_m_rad(robotdata.copy_data);
+        robotdata.partner_master_data = RobotDataCal::convert_m_rad(robotdata.partner_master_data);
 
         return robotdata;
     }
