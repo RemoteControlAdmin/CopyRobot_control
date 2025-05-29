@@ -109,7 +109,7 @@ namespace forceget {
         FEacty =F_G*sin(Fa_G);}
         FEactNull =0;
 
-        return std::vector<double>(FEactM,FEactMa);
+        return {FEactM,FEactMa};
     }
 
     //Replace a angle of actual force from the robot frame to the global frame [FEa]=FEa(A_MRDisplacement)
