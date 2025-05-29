@@ -77,7 +77,7 @@ int main(){
     /*
     * ローカル変数定義　local variable definition
     */
-    int64_t send_time;
+    int64_t send_time = 0; // 送信時間 send time
     //構造体定義
     RobotData robotdata;
     Mat3x1 mat3x1;

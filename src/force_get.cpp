@@ -109,7 +109,7 @@ namespace forceget {
         FEacty =F_G*sin(Fa_G);}
         FEactNull =0;
 
-        return {FEactM,FEactMa};
+        return std::vector<double>(FEactM,FEactMa);
     }
 
     //Replace a angle of actual force from the robot frame to the global frame [FEa]=FEa(A_MRDisplacement)
@@ -133,12 +133,14 @@ namespace forceget {
     /*
     * class ForceIdeal
     */
+    ForceIdeal::ForceIdeal(){} //コンストラクタ
+
     //Virtual Force Environment calculate [FEVir]=[Ks]*[0.365-([PM1]-[PC1])]
     std::pair<std::vector<double>,bool> ForceIdeal::FEVirCal(std::vector<double> partner_master_data, std::vector<double> copy_data){
         DVir   = sqrt(pow(partner_master_data[0] - copy_data[0],2.0)+pow(partner_master_data[1]-copy_data[1],2.0));                       //Displcement Virtual
         A_DVir = atan2((partner_master_data[1]-copy_data[1]),(partner_master_data[0]-copy_data[0]));                                    //Angle of Displcement Virtual
-        if		(DVir>=0.365) 				{FEVir = 0;                     DVir;       CRTouchChk=0;}
-        else if	(DVir> 0.340&&DVir<0.365)	{FEVir = Kspring*(0.365-DVir);  DVir;       CRTouchChk=1;}
+        if		(DVir>=0.365) 				{FEVir = 0;                          CRTouchChk=0;}
+        else if	(DVir> 0.340&&DVir<0.365)	{FEVir = Kspring*(0.365-DVir);       CRTouchChk=1;}
         else								{FEVir = Kspring*(0.365-DVir);  DVir=0.025;              }
 
         return {{FEVir*cos(A_DVir), FEVir*sin(A_DVir), A_DVir, DVir, FEVir}, CRTouchChk};
@@ -147,8 +149,8 @@ namespace forceget {
     std::pair<std::vector<double>,bool> ForceIdeal::FIdCal(std::vector<double> partner_master_data, std::vector<double> master_data){
         DIde   = sqrt(pow(partner_master_data[0]-master_data[0],2.0)+pow(partner_master_data[0]-master_data[1],2.0));                       //Displcement Ideal
         A_DIde = atan2((partner_master_data[8]-master_data[1]),(partner_master_data[7]-master_data[0]));                                    //Angle Virtual
-        if		(DIde>=0.365)               {FIdeal = 0;                    DIde;       MRTouchChk=0;}
-        else if	(DIde> 0.340&&DIde<0.365)	{FIdeal = Kspring*(0.365-DIde); DIde;       MRTouchChk=1;}
+        if		(DIde>=0.365)               {FIdeal = 0;                          MRTouchChk=0;}
+        else if	(DIde> 0.340&&DIde<0.365)	{FIdeal = Kspring*(0.365-DIde);        MRTouchChk=1;}
         else								{FIdeal = Kspring*(0.365-DIde); DIde=0.025;              
             
         return {{FIdeal*cos(A_DIde), FIdeal*sin(A_DIde), A_DIde, DIde, FIdeal}, MRTouchChk};
