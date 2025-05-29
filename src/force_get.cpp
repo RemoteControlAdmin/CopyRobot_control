@@ -151,7 +151,7 @@ namespace forceget {
         A_DIde = atan2((partner_master_data[8]-master_data[1]),(partner_master_data[7]-master_data[0]));                                    //Angle Virtual
         if		(DIde>=0.365)               {FIdeal = 0;                          MRTouchChk=0;}
         else if	(DIde> 0.340&&DIde<0.365)	{FIdeal = Kspring*(0.365-DIde);        MRTouchChk=1;}
-        else								{FIdeal = Kspring*(0.365-DIde); DIde=0.025;              
+        else								{FIdeal = Kspring*(0.365-DIde); DIde=0.025;}         
             
         return {{FIdeal*cos(A_DIde), FIdeal*sin(A_DIde), A_DIde, DIde, FIdeal}, MRTouchChk};
     }
@@ -167,5 +167,4 @@ namespace forceget {
         return 0;
     }*/
     
-}
 }
