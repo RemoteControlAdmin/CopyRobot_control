@@ -17,9 +17,9 @@
 extern std::atomic<bool> stop_flag;
 
 struct RobotData {
-    std::vector<double> master_data{0, 0, 0};
-    std::vector<double> copy_data{0, 0, 0};
-    std::vector<double> partner_master_data{0, 0, 0};
+    std::vector<double> master_data{0, 0, 0, 0, 0, 0};
+    std::vector<double> copy_data{0, 0, 0, 0, 0, 0};
+    std::vector<double> partner_master_data{0, 0, 0, 0, 0, 0};
     std::array<double,3> err_data{0, 0, 0};
     std::array<double,3> last_err_data{0, 0, 0};
 
