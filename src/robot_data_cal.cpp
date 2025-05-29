@@ -10,7 +10,9 @@ namespace robotcontrol{
         data[0] = data[0]/1000.0; // converted to m
         data[1] = data[1]/1000.0; // converted to m
         data[2] = fmod(data[2]*M_PI /180.0+M_PI,2*M_PI)-M_PI;; //Wrap to the range from [0,360] to [-pi, +pi]
-
+        data[3] = data[3]/1000.0; // converted to m
+        data[4] = data[4]/1000.0; // converted to m
+        data[5] = data[5]*M_PI/180.0; 	// converted to rad/s
         return data;
     }
     // public

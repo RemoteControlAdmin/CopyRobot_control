@@ -136,8 +136,8 @@ int main(){
             std::lock_guard<std::mutex> lock(queue_mutex_copy);
             if (!deque_copy.empty()){
                 temp_copy_data = deque_copy.front().first;
-                robotdata.copy_data.assign(temp_copy_data.begin(), temp_copy_data.begin()+3);
-                robotdata.partner_master_data.assign(temp_copy_data.begin()+3, temp_copy_data.end());
+                robotdata.copy_data.assign(temp_copy_data.begin(), temp_copy_data.begin()+6);
+                robotdata.partner_master_data.assign(temp_copy_data.begin()+6, temp_copy_data.end());
                 last_copy_data = robotdata.copy_data;
                 last_partner_master_data = robotdata.partner_master_data;
                 deque_copy.pop_front();
