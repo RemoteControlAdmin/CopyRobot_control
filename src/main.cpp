@@ -85,9 +85,9 @@ int main(){
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
 
     // udpが受信できなかった際に使用するデータ
-    std::vector<double> last_master_data = {0,0,0};
-    std::vector<double> last_copy_data = {0,0,0};
-    std::vector<double> last_partner_master_data = {0,0,0};
+    std::vector<double> last_master_data = {0,0,0,0,0,0};
+    std::vector<double> last_copy_data = {0,0,0,0,0,0};
+    std::vector<double> last_partner_master_data = {0,0,0,0,0,0};
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::vector<double> temp_copy_data = {0,0,0,0,0,0,0,0,0,0,0,0};
     // dt計算用 dt calculation
