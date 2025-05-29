@@ -23,7 +23,7 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     int ADC_AI0,ADC_AI1,ADC_AI2,ADC_AI3; // アナログ入力のインデックスを格納する変数の宣言
     double Volt0, Volt1, Volt2, Volt3; // アナログ入力の電圧値を格納する変数の宣言
     double FAx, FAy, FBx, FBy; // 力センサーの値を格納する変数の宣言
-    double fFAx, fFAy, fFBx, fFBy; // フィルタ後の力センサーの値を格納する変数の宣言
+    double fFAx=0, fFAy=0, fFBx=0, fFBy=0; // フィルタ後の力センサーの値を格納する変数の宣言
     double FEactM, FEactMa, FEactx, FEacty, FEactNull; // 力環境の実際の値を格納する変数の宣言
     double AngleA_off = -(M_PI/6), AngleB_off = (M_PI*5/6); // 力センサーのオフセット角度を格納する変数の宣言
     double FEactMThreshold = 1.0; // 力環境の実際の値のしきい値を格納する変数の宣言

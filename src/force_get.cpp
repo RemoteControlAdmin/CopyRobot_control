@@ -33,7 +33,7 @@ namespace forceget {
         for (int i=0;i<4;i++) {
             fclose(Analog_files[i]);
         }
-        return Analog_Val
+        return Analog_Val;
     }
     
     std::vector<double> ForceActual::FEActCal(){
@@ -53,20 +53,20 @@ namespace forceget {
         FBx=(analog_vals[1]*(1.8/4096))*15.5038-16.8527;  //FBx
         FBy=(analog_vals[3]*(1.8/4096))*15.5038-16.7597;  //FBy 
         //Digital Lowpass Filter
-        fFAx = a*fFAx+b*FAx;    //fc=10Hz Ts=0.01s
-        fFAy = a*fFAy+b*FAy;    //fc=10Hz Ts=0.01s
-        fFBx = a*fFBx+b*FBx;    //fc=10Hz Ts=0.01s
-        fFBy = a*fFBy+b*FBy;    //fc=10Hz Ts=0.01s 
+        //fFAx = a*fFAx+b*FAx;    //fc=10Hz Ts=0.01s
+        //fFAy = a*fFAy+b*FAy;    //fc=10Hz Ts=0.01s
+        //fFBx = a*fFBx+b*FBx;    //fc=10Hz Ts=0.01s
+        //fFBy = a*fFBy+b*FBy;    //fc=10Hz Ts=0.01s 
     
         //With Filter Process
         //1st Order Digital Lowpass Filter
-        fFAx = a*fFAx+b*FAx;    //fc=10Hz Ts=0.01s
-        fFAy = a*fFAy+b*FAy;    //fc=10Hz Ts=0.01s
-        fFBx = a*fFBx+b*FBx;    //fc=10Hz Ts=0.01s
-        fFBy = a*fFBy+b*FBy;    //fc=10Hz Ts=0.01s 
+        //fFAx = a*fFAx+b*FAx;    //fc=10Hz Ts=0.01s
+        //fFAy = a*fFAy+b*FAy;    //fc=10Hz Ts=0.01s
+        //fFBx = a*fFBx+b*FBx;    //fc=10Hz Ts=0.01s
+        //fFBy = a*fFBy+b*FBy;    //fc=10Hz Ts=0.01s 
         //Result Force Robot Frame of Sensor A
-        FA_R  = sqrt(pow(fFAx,2)+pow(fFAy,2));
-        FAa_R = (atan2(fFAy,fFAx));
+        FA_R  = sqrt(pow(FAx,2)+pow(FAy,2));
+        FAa_R = (atan2(FAy,FAx));
         FAx_R = FA_R*cos(FAa_R);
         FAy_R = FA_R*sin(FAa_R);
         //Result Force Global Frame of Sensor A

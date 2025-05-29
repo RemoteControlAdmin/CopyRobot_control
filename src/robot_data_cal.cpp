@@ -23,9 +23,11 @@ namespace robotcontrol{
     //[Pe]=[Pd]-[Pg]
     std::array<double,3> RobotDataCal::err_robotposition_cal(RobotData robotdata){
         int i;
-        for(i=0;i<3;i++){
+        for(i=0;i<2;i++){
             robotdata.err_data[i]=robotdata.master_data[i]-robotdata.copy_data[i];
         }
+        robotdata.err_data[2] = atan2(sin(robotdata.master_data[2] - robotdata.copy_data[2]),
+                                      cos(robotdata.master_data[2] - robotdata.copy_data[2]));
         return robotdata.err_data;
     }
 

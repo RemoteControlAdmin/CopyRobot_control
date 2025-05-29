@@ -11,7 +11,7 @@
 # include "robot_control.hpp"
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
-# include "force_get.cpp"
+# include "force_get.hpp"
 
 std::atomic<bool> stop_flag(false);// グローバル変数として定義
 void end_task(int signum){
