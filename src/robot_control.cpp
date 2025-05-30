@@ -13,7 +13,7 @@ namespace robotcontrol{
     //private
     // public
     //[Vc] PID Closed Loop Control Velocity Command
-    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::vector<double> err_data, std::vector<double> last_err_data){
+    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data){
         int i;
         //printf("Global Velocity Matrix Command");
         for(i=0;i<3;i++){
