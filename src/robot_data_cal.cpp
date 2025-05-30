@@ -16,7 +16,7 @@ namespace robotcontrol{
         return data;
     }
     // public
-    std::pir<std::vector<double>, std::vector<double>, std::vector<double>> RobotDataCal::convert_robotdata(std::vector<double> master_data, 
+    std::pair<std::vector<double>, std::vector<double>, std::vector<double>> RobotDataCal::convert_robotdata(std::vector<double> master_data, 
         std::vector<double> copy_data, std::vector<double> partner_master_data){
         master_data = RobotDataCal::convert_m_rad(master_data);
         copy_data = RobotDataCal::convert_m_rad(copy_data);
