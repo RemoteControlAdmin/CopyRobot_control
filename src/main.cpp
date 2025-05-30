@@ -85,7 +85,7 @@ int main(){
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
 
     // 一時的にcopyとpartnerのデータを保持するための変数
-    std::vector<double> temp_copy_data(12, 0.0);
+    std::vector<double> temp_copy_data{6, 0.0};
     // 送信用変数
     std::vector<double> send_data(26, 0.0);
     // dt計算用 dt calculation
