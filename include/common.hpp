@@ -17,15 +17,18 @@
 extern std::atomic<bool> stop_flag;
 
 struct RobotData {
-    std::vector<double> master_data{0, 0, 0, 0, 0, 0};
-    std::vector<double> copy_data{0, 0, 0, 0, 0, 0};
-    std::vector<double> partner_master_data{0, 0, 0, 0, 0, 0};
-    std::array<double,3> err_data{0, 0, 0};
-    std::array<double,3> last_err_data{0, 0, 0};
+    td::vector<double> master_data(6, 0.0);
+    std::vector<double> copy_data(6, 0.0);
+    std::vector<double> partner_master_data(6, 0.0);
+    std::array<double,3> err_data(3, 0.0);
+    std::array<double,3> last_err_data(3, 0.0);
+    std::vector<double> last_master_data(6, 0.0);
+    std::vector<double> last_copy_data(6, 0.0);
+    std::vector<double> last_partner_master_data(6, 0.0);
 
     std::vector<double> force_actual_data{0, 0};
-    std::pair<std::vector<double>,bool> force_virtual_data{{0.0, 0.0, 0.0, 0.0, 0.0}, false};
-    std::pair<std::vector<double>,bool> force_ideal_data{{0.0, 0.0, 0.0, 0.0, 0.0},false};
+    std::vector<double> force_virtual_data(6, 0.0);
+    std::vector<double> force_ideal_data(6, 0.0);
 };
 
 struct Mat3x1 {

@@ -73,30 +73,28 @@ int main(){
     forceget::ForceActual force_actual{}; // force actual
     forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
-    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 65000, 6); // UDP初期化
+    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.29", 65000, 26); // UDP初期化
     /*
     * ローカル変数定義　local variable definition
     */
     int64_t send_time = 0; // 送信時間 send time
-    //構造体定義
+    //構造体宣言
     RobotData robotdata;
     Mat3x1 mat3x1;
     Mat3X3 mat3x3;
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
 
-    // udpが受信できなかった際に使用するデータ
-    std::vector<double> last_master_data = {0,0,0,0,0,0};
-    std::vector<double> last_copy_data = {0,0,0,0,0,0};
-    std::vector<double> last_partner_master_data = {0,0,0,0,0,0};
     // 一時的にcopyとpartnerのデータを保持するための変数
-    std::vector<double> temp_copy_data = {0,0,0,0,0,0,0,0,0,0,0,0};
+    std::vector<double> temp_copy_data(12, 0.0);
+    // 送信用変数
+    std::vector<double> send_data(26, 0.0);
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
-    std::chrono::microseconds dt(30*1000); // calculation cycle
+    std::chrono::microseconds dt(15*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // first clock
     /*
     * ============== 処理 process ==============
@@ -124,11 +122,11 @@ int main(){
             if (!deque_master.empty()){
                 robotdata.master_data = deque_master.front().first;
                 send_time = deque_master.front().second;
-                last_master_data = robotdata.master_data;
+                robotdata.last_master_data = robotdata.master_data;
                 deque_master.pop_front();
             }
             else{
-                robotdata.master_data = last_master_data;
+                robotdata.master_data = robotdata.last_master_data;
             }
         } // unlock用
         // copy
@@ -138,13 +136,13 @@ int main(){
                 temp_copy_data = deque_copy.front().first;
                 robotdata.copy_data.assign(temp_copy_data.begin(), temp_copy_data.begin()+6);
                 robotdata.partner_master_data.assign(temp_copy_data.begin()+6, temp_copy_data.end());
-                last_copy_data = robotdata.copy_data;
-                last_partner_master_data = robotdata.partner_master_data;
+                robotdata.last_copy_data = robotdata.copy_data;
+                robotdata.last_partner_master_data = robotdata.partner_master_data;
                 deque_copy.pop_front();
             }
 	        else{
-	    	    robotdata.copy_data = last_copy_data;
-                robotdata.partner_master_data = last_partner_master_data;
+	    	    robotdata.copy_data = robotdata.last_copy_data;
+                robotdata.partner_master_data = robotdata.last_partner_master_data;
             }
         } // unlock用
         /*
@@ -182,7 +180,15 @@ int main(){
         robotdata.last_err_data = robotdata.err_data;
 
         // デバック用
-        udpConnection_raspberrypi.udp_send(robotdata.master_data, send_time);
+        send_data.clear();
+        send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
+        send_data.insert(send_data.end(), mat3x1.velocity_data.begin(), mat3x1.velocity_data.end()); // 3
+        send_data.insert(send_data.end(), mat3x1.invwheelvelocity.begin(), mat3x1.invwheelvelocity.end()); // 3
+        send_data.insert(send_data.end(), mat3x1.mortor_voltage.begin(), mat3x1.mortor_voltage.end()); // 3
+        send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
+        send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
+        send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
+        udpConnection_raspberrypi.udp_send(send_data, send_time);
         show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
