@@ -16,7 +16,7 @@ namespace robotcontrol{
         return data;
     }
     // public
-    RobotData RobotDataCal::convert_robotdata(RobotData robotdata){
+    RobotData RobotDataCal::convert_robotdata(const RobotData& robotdata){
         robotdata.master_data = RobotDataCal::convert_m_rad(robotdata.master_data);
         robotdata.copy_data = RobotDataCal::convert_m_rad(robotdata.copy_data);
         robotdata.partner_master_data = RobotDataCal::convert_m_rad(robotdata.partner_master_data);
@@ -24,7 +24,7 @@ namespace robotcontrol{
         return robotdata;
     }
     //[Pe]=[Pd]-[Pg]
-    std::array<double,3> RobotDataCal::err_robotposition_cal(RobotData robotdata){
+    std::array<double,3> RobotDataCal::err_robotposition_cal(const RobotData& robotdata){
         int i;
         for(i=0;i<2;i++){
             robotdata.err_data[i]=robotdata.master_data[i]-robotdata.copy_data[i];
