@@ -132,7 +132,7 @@ namespace forceget {
     ForceIdeal::ForceIdeal(){} //コンストラクタ
 
     //Virtual Force Environment calculate [FEVir]=[Ks]*[0.365-([PM1]-[PC1])]
-    std::pair<std::vector<double>,bool> ForceIdeal::FEVirCal(std::vector<double> partner_master_data, std::vector<double> copy_data){
+    std::vector<double> ForceIdeal::FEVirCal(std::vector<double> partner_master_data, std::vector<double> copy_data){
         DVir   = sqrt(pow(partner_master_data[0] - copy_data[0],2.0)+pow(partner_master_data[1]-copy_data[1],2.0));                       //Displcement Virtual
         A_DVir = atan2((partner_master_data[1]-copy_data[1]),(partner_master_data[0]-copy_data[0]));                                    //Angle of Displcement Virtual
         if		(DVir>=0.365) 				{FEVir = 0;                          CRTouchChk=0;}
@@ -142,7 +142,7 @@ namespace forceget {
         return {FEVir*cos(A_DVir), FEVir*sin(A_DVir), DVir, A_DVir, FEVir, CRTouchChk};
     }
     //Force Ideal calculate [FId]=[Ks]*[0.365-([PM1]-[PM2])]
-    std::pair<std::vector<double>,bool> ForceIdeal::FIdCal(std::vector<double> partner_master_data, std::vector<double> master_data){
+    std::vector<double> ForceIdeal::FIdCal(std::vector<double> partner_master_data, std::vector<double> master_data){
         DIde   = sqrt(pow(partner_master_data[0]-master_data[0],2.0)+pow(partner_master_data[0]-master_data[1],2.0));                       //Displcement Ideal
         A_DIde = atan2((partner_master_data[8]-master_data[1]),(partner_master_data[7]-master_data[0]));                                    //Angle Virtual
         if		(DIde>=0.365)               {FIdeal = 0;                          MRTouchChk=0;}

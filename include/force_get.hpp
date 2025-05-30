@@ -42,8 +42,8 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     public: // 以下public関数と変数の宣言
 
     ForceIdeal(); // コンストラクタの宣言
-    std::pair<std::vector<double>,bool> FIdCal(std::vector<double> partner_master_data, std::vector<double> copy_data); // 力理想値を計算する関数の宣言
-    std::pair<std::vector<double>,bool> FEVirCal(std::vector<double> partner_master_data, std::vector<double> master_data); // 力環境の仮想値を計算する関数の宣言
+    std::vector<double> FIdCal(std::vector<double> partner_master_data, std::vector<double> copy_data); // 力理想値を計算する関数の宣言
+    std::vector<double> FEVirCal(std::vector<double> partner_master_data, std::vector<double> master_data); // 力環境の仮想値を計算する関数の宣言
     //double ForceCompensateCal(); // 力補償を計算する関数の宣言
 
 

@@ -41,8 +41,8 @@ void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
               << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
               << std::endl;*/
     std::cout << std::left << std::setw(20) << ("FEactM = " + std::to_string(robotdata.force_actual_data[0])) 
-              << std::left << std::setw(20) << ("FEVir = " + std::to_string(robotdata.force_virtual_data.first[4]))
-              << std::left << std::setw(20) << ("F = " + std::to_string(robotdata.force_ideal_data.first[4]))
+              << std::left << std::setw(20) << ("FEVir = " + std::to_string(robotdata.force_virtual_data[4]))
+              << std::left << std::setw(20) << ("F = " + std::to_string(robotdata.force_ideal_data[4]))
               << std::endl;
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
               << std::endl;
