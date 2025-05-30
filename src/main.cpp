@@ -162,7 +162,7 @@ int main(){
         /*
         * robot control
         */
-        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata);        // PID control
+        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
         mat3x1.velocity_data = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
 
         /*

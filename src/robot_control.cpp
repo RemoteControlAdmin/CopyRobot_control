@@ -13,15 +13,15 @@ namespace robotcontrol{
     //private
     // public
     //[Vc] PID Closed Loop Control Velocity Command
-    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(RobotData robotdata){
+    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::vector<double> err_data, std::vector<double> last_err_data){
         int i;
         //printf("Global Velocity Matrix Command");
         for(i=0;i<3;i++){
         //	printf("\n");
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
-            Integral[i]		+= robotdata.err_data[i];								//Calculate the integral term
-            Derivative[i]	= robotdata.err_data[i] - robotdata.last_err_data[i];						//Calculate the derivative term
-            velocity_data[i] = Kp*robotdata.err_data[i] + Ki*Integral[i] + Kd*Derivative[i];	//Calculate the output term
+            Integral[i]		+= err_data[i];								//Calculate the integral term
+            Derivative[i]	= err_data[i] - last_err_data[i];						//Calculate the derivative term
+            velocity_data[i] = Kp*err_data[i] + Ki*Integral[i] + Kd*Derivative[i];	//Calculate the output term
         //	printf("%+.4f",Vc[i]);
         }
         return velocity_data;

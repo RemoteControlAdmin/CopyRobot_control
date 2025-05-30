@@ -14,7 +14,7 @@ namespace robotcontrol {
 
     RobotControl();
 
-    Eigen::Vector3d CLPositionControllerPIDCal(RobotData robotdata);
+    Eigen::Vector3d CLPositionControllerPIDCal(std::vector<double> err_data, std::vector<double> last_err_data);
     Eigen::Vector3d VelocityLimitationCal(Eigen::Vector3d velocity_data);
 
 
