@@ -120,8 +120,9 @@ int main(){
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master);
             if (!deque_master.empty()){
-                robotdata.master_data = deque_master.front().first;
-                send_time = deque_master.front().second;
+                std::pair<std::vector<double>, int64_t> getdata = deque_master.front();
+                robotdata.master_data = getdata.first;
+                send_time = getdata.second;
                 robotdata.last_master_data = robotdata.master_data;
                 deque_master.pop_front();
             }
