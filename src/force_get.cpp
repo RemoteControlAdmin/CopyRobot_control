@@ -75,8 +75,8 @@ namespace forceget {
         FA_G  = sqrt(pow(FAx_G,2)+pow(FAy_G,2));
         FAa_G = (atan2(FAy_G,FAx_G));
         //Result Force Robot Frame of Sensor B
-        FB_R =sqrt(pow(fFBx,2)+pow(fFBy,2));
-        FBa_R=(atan2(fFBy,fFBx));
+        FB_R =sqrt(pow(FBx,2)+pow(FBy,2));
+        FBa_R=(atan2(FBy,FBx));
         FBx_R = FB_R*cos(FBa_R);
         FBy_R = FB_R*sin(FBa_R);
         //Result Force Global Frame of Sensor B
