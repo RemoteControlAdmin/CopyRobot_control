@@ -182,9 +182,9 @@ int main(){
         // デバック用
         send_data.clear();
         send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
-        send_data.insert(send_data.end(), mat3x1.velocity_data.begin(), mat3x1.velocity_data.end()); // 3
-        send_data.insert(send_data.end(), mat3x1.invwheelvelocity.begin(), mat3x1.invwheelvelocity.end()); // 3
-        send_data.insert(send_data.end(), mat3x1.mortor_voltage.begin(), mat3x1.mortor_voltage.end()); // 3
+        send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
+        send_data.insert(send_data.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
+        send_data.insert(send_data.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
         send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
         send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
         send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
