@@ -143,8 +143,8 @@ namespace forceget {
     }
     //Force Ideal calculate [FId]=[Ks]*[0.365-([PM1]-[PM2])]
     std::vector<double> ForceIdeal::FIdCal(std::vector<double> partner_master_data, std::vector<double> master_data){
-        DIde   = sqrt(pow(partner_master_data[0]-master_data[0],2.0)+pow(partner_master_data[0]-master_data[1],2.0));                       //Displcement Ideal
-        A_DIde = atan2((partner_master_data[8]-master_data[1]),(partner_master_data[7]-master_data[0]));                                    //Angle Virtual
+        DIde   = sqrt(pow(partner_master_data[0]-master_data[0],2.0)+pow(partner_master_data[1]-master_data[1],2.0));                       //Displcement Ideal
+        A_DIde = atan2((partner_master_data[1]-master_data[1]),(partner_master_data[0]-master_data[0]));                                    //Angle Virtual
         if		(DIde>=0.365)               {FIdeal = 0;                          MRTouchChk=0;}
         else if	(DIde> 0.340&&DIde<0.365)	{FIdeal = Kspring*(0.365-DIde);        MRTouchChk=1;}
         else								{FIdeal = Kspring*(0.365-DIde); DIde=0.025;}         
