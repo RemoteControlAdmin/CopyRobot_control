@@ -85,6 +85,7 @@ int main(){
 
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::vector<double> temp_copy_data(12, 0.0);
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
     // 送信用変数
     std::vector<double> send_data(26, 0.0);
     // dt計算用 dt calculation
@@ -153,8 +154,7 @@ int main(){
         /*
         *  data calculation about robot
         */
-        std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data 
-            = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
+        temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
         //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
