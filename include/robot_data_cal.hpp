@@ -22,6 +22,8 @@ namespace robotcontrol {
     private:
     std::vector<double> convert_m_rad(std::vector<double> data);
 
+    std::array<double,3> err_data; // エラー値を格納する配列
+
 
 
 }; // class RobotControl
