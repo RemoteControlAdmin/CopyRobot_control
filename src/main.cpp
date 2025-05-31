@@ -94,7 +94,7 @@ int main(){
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt; //dt
-    std::chrono::microseconds dt(15*1000); // calculation cycle
+    std::chrono::microseconds dt(30*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // first clock
     /*
     * ============== 処理 process ==============
@@ -147,12 +147,6 @@ int main(){
             }
         } // unlock用
         /*
-        *  force getting
-        */
-        robotdata.force_actual_data = force_actual.FEActCal();
-        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
-        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
-        /*
         *  data calculation about robot
         */
         temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
@@ -160,6 +154,13 @@ int main(){
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
         
+        /*
+        *  force getting
+        */
+        robotdata.force_actual_data = force_actual.FEActCal();
+        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
+        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+
         /*
         * robot control
         */
