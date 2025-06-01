@@ -14,7 +14,7 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
 
     std::vector<int> ReadAnalogInputs(); // 関数の宣言
     
-    std::vector<double> FEActCal(); // 力環境の実際の値を計算する関数の宣言
+    std::vector<double> FEActCal(std::vector<double> copy_data); // 力環境の実際の値を計算する関数の宣言
 
     //double FEActSwapCal(); // 力環境の実際の値をロボットフレームからグローバルフレームに変換する関数の宣言
     

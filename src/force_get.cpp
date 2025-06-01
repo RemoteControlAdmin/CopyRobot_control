@@ -36,7 +36,7 @@ namespace forceget {
         return Analog_Val;
     }
     
-    std::vector<double> ForceActual::FEActCal(){
+    std::vector<double> ForceActual::FEActCal(std::vector<double> copy_data){
         std::vector<int> analog_vals  = ReadAnalogInputs();
         ADC_AI0=analog_vals[0];  //FAx
         ADC_AI2=analog_vals[2];  //FAy
@@ -104,7 +104,8 @@ namespace forceget {
         FEactx =F_G*cos(Fa_G);
         FEacty =F_G*sin(Fa_G);}
         FEactNull =0;
-
+        // convert global frame
+        FEactMa = FEactMa + copy_data[2]; // copy_data[2] is the angle offset for the global frame
         return {FEactM,FEactMa};
     }
 
