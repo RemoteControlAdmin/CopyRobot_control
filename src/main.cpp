@@ -184,7 +184,7 @@ int main(){
                 safety_count++;
                 if (safety_count > 20){
                     std::cout << "強制終了" << std::endl;
-                    exit(1);  // ここで即終了（1は終了コード）
+                    stop_flag = true;
                 }
                 robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
                 continue;
