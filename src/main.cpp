@@ -182,9 +182,10 @@ int main(){
             bool result = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
             if (! result) {
                 safety_count++;
-                if (safety_count > 20){
+                if (safety_count > 60){
                     std::cout << "強制終了" << std::endl;
                     stop_flag = true;
+                    break;
                 }
                 robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
                 continue;
