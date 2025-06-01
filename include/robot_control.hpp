@@ -14,8 +14,10 @@ namespace robotcontrol {
 
     RobotControl();
 
+    void chenge_pid(double kp, double ki, double kd);
+
     Eigen::Vector3d CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data);
-    Eigen::Vector3d VelocityLimitationCal(Eigen::Vector3d velocity_data);
+    bool VelocityLimitationCal(Eigen::Vector3d velocity_data);
 
 
     private:

@@ -176,9 +176,22 @@ int main(){
         /*
         * robot control
         */
-        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
-        mat3x1.velocity_data = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
-
+        int safety_count = 0; // 安全カウント
+        while(true){
+            mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
+            bool result = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
+            if (! result) {
+                safety_count++;
+                if (safety_count > 20){
+                    std::cout << "強制終了" << std::endl;
+                    exit(1);  // ここで即終了（1は終了コード）
+                }
+                robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
+                continue;
+            }
+            robot_control.chenge_pid(25, 0.02, 17);
+            break; //  
+        }
         /*
         * inverce kinematics
         */

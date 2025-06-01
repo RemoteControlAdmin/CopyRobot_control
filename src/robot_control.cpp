@@ -10,6 +10,11 @@ namespace robotcontrol{
         Ki = 0.02;
         Kd = 17; // medium 2.5 high 17
     }
+    void RobotControl::chenge_pid(double kp, double ki, double kd){
+        Kp = kp;
+        Ki = ki;
+        Kd = kd;
+    }
     //private
     // public
     //[Vc] PID Closed Loop Control Velocity Command
@@ -27,7 +32,7 @@ namespace robotcontrol{
         return velocity_data;
     }
 
-    Eigen::Vector3d RobotControl::VelocityLimitationCal(Eigen::Vector3d velocity_data){
+    bool RobotControl::VelocityLimitationCal(Eigen::Vector3d velocity_data){
         //[Wcmax]=[-m]*[Vlc]+[Wgmax],[Wcmin]=[+m]*[Vlc]-[Wgmax]
         double Vlc=sqrt((velocity_data[0]*velocity_data[0])+(velocity_data[1]*velocity_data[1]));
         double Wlc=velocity_data[2];
@@ -35,17 +40,11 @@ namespace robotcontrol{
         double Wcmin=+8.6962*Vlc-14.3400;
 
         if(((Vlc>=0)&&(Vlc<=1.6490))&&((Wlc>=Wcmin)&&(Wlc<=Wcmax))){
-            return velocity_data;
+            return  true;
             //ChkStop=0;
         }
-        else{
-            velocity_data[0] = 0;
-            velocity_data[1] = 0;
-            velocity_data[2] = 0;
-            //ChkStop=1;
-        }
         
-        return velocity_data;
+        return false;
         }
 
    
