@@ -43,6 +43,8 @@ namespace robotcontrol{
         else										{data[0]=0.4;data[1]=0.4;data[2]=M_PI/2;}
         return data;
     }
+
+    std::array<double,3>
     /*
         //[Pd] Rotate movement
     double MRobot_Rotate_PositionCal(){

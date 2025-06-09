@@ -208,10 +208,16 @@ int main(){
 
         robotdata.last_err_data = robotdata.err_data;
 
-        // デバック用
+        // デバック用 debug
         send_data.clear();
-        send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
-        send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
+        //send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
+        for (const auto& val : robotdata.err_data) {
+            send_data.push_back(val * 1000);
+        }
+        //send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
+        for (const auto& val : mat3x1.velocity_data) {
+            send_data.push_back(val * 1000);
+        }
         send_data.insert(send_data.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
         send_data.insert(send_data.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
         send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
