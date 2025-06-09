@@ -5,7 +5,7 @@
 
 CC       := /usr/bin/g++
 AR       := /usr/bin/ar
-CFLAGS   := -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
+CFLAGS   := -std=c++11 -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm

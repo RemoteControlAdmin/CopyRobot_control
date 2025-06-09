@@ -216,7 +216,8 @@ int main(){
             send_data.push_back(val * 1000);
         }
         //send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
-        for (const auto& val : mat3x1.velocity_data) {
+        for (int i = 0; i < mat3x1.velocity_data.size(); ++i) {
+            double val = mat3x1.velocity_data[i];
             send_data.push_back(val * 1000);
         }
         send_data.insert(send_data.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
