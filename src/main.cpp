@@ -226,7 +226,7 @@ int main(){
         send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
         send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
         udpConnection_raspberrypi.udp_send(send_data, send_time);
-        show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        //show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
         */
