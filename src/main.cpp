@@ -124,6 +124,8 @@ int main(){
     /*
     * ============== main roop ==============
     */
+    int safety_count = 0; // 安全カウント
+    std::vector<int> not_get_count = {0,0}; // データが取得できなかった回数
     while(!stop_flag){
         /*
         * queue取り出し
@@ -141,6 +143,7 @@ int main(){
             }
             else{
                 robotdata.master_data = robotdata.last_master_data;
+                not_get_count[0]++;
             }
         } // unlock用
         // copy
@@ -157,6 +160,7 @@ int main(){
 	        else{
 	    	    robotdata.copy_data = robotdata.last_copy_data;
                 robotdata.partner_master_data = robotdata.last_partner_master_data;
+                not_get_count[1]++;
             }
         } // unlock用
         /*
@@ -177,22 +181,15 @@ int main(){
         /*
         * robot control
         */
-        int safety_count = 0; // 安全カウント
-        while(true){
-            mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
-            bool result = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
-            if (! result) {
-                safety_count++;
-                if (safety_count > 60){
-                    std::cout << "強制終了" << std::endl;
-                    stop_flag = true;
-                    break;
-                }
-                robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
-                continue;
+        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
+        bool result = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
+        if (! result) {
+            safety_count++;
+            if (safety_count > 60){
+                std::cout << "強制終了" << std::endl;
+                stop_flag = true;
             }
-            robot_control.chenge_pid(25, 0.02, 17);
-            break; //  
+            //robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
         }
         /*
         * inverce kinematics
@@ -247,6 +244,7 @@ int main(){
     udp_thread_copy.join(); // UDP receive thread from copy
     motor_control.DisableMotorDrive();
     std::cout << "[INFO] Program terminated gracefully." << std::endl;
+    std::cout << "Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
     return 0;
 
 }

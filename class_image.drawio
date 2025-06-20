@@ -116,7 +116,7 @@
                 <mxCell id="99" value="PID control" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="76">
                     <mxGeometry x="60" y="780" width="120" height="40" as="geometry"/>
                 </mxCell>
-                <mxCell id="101" value="PID control" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="76">
+                <mxCell id="101" value="Limit of velocity" style="rounded=1;whiteSpace=wrap;html=1;" vertex="1" parent="76">
                     <mxGeometry x="60" y="860" width="120" height="40" as="geometry"/>
                 </mxCell>
                 <mxCell id="77" value="Sub 1 Thread" style="swimlane;startSize=20;html=1;" vertex="1" parent="75">
