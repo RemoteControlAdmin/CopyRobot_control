@@ -13,23 +13,26 @@ namespace robotcontrol{
         data[3] = data[3]/1000.0; // converted to m
         data[4] = data[4]/1000.0; // converted to m
         data[5] = data[5]*M_PI/180.0; 	// converted to rad/s
-
         return data;
     }
     // public
-    RobotData RobotDataCal::convert_robotdata(RobotData robotdata){
-        robotdata.master_data = RobotDataCal::convert_m_rad(robotdata.master_data);
-        robotdata.copy_data = RobotDataCal::convert_m_rad(robotdata.copy_data);
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> RobotDataCal::convert_robotdata(std::vector<double> master_data, 
+        std::vector<double> copy_data, std::vector<double> partner_master_data){
+        master_data = RobotDataCal::convert_m_rad(master_data);
+        copy_data = RobotDataCal::convert_m_rad(copy_data);
+        partner_master_data = RobotDataCal::convert_m_rad(partner_master_data);
 
-        return robotdata;
+        return {master_data, copy_data, partner_master_data};
     }
     //[Pe]=[Pd]-[Pg]
-    std::array<double,3> RobotDataCal::err_robotposition_cal(RobotData robotdata){
+    std::array<double,3> RobotDataCal::err_robotposition_cal(std::vector<double> master_data, std::vector<double> copy_data){
         int i;
-        for(i=0;i<3;i++){
-            robotdata.err_data[i]=robotdata.master_data[i]-robotdata.copy_data[i];
+        for(i=0;i<2;i++){
+            err_data[i]=master_data[i]-copy_data[i];
         }
-        return robotdata.err_data;
+        err_data[2] = atan2(sin(master_data[2] - copy_data[2]),
+                                      cos(master_data[2] - copy_data[2]));
+        return err_data;
     }
 
     

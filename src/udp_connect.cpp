@@ -154,7 +154,7 @@ void UdpCommunicator::recive_thread_from_master(){
 }
 
 void UdpCommunicator::recive_thread_from_copy(){
-    UdpConnect udpConnection_from_copy("0.0.0.0", 41000, 6); // from Copy Robot
+    UdpConnect udpConnection_from_copy("0.0.0.0", 41000, 12); // from Copy Robot
     udpConnection_from_copy.udp_bind();
 
     while(!stop_flag){

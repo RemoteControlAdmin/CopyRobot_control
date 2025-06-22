@@ -15,11 +15,14 @@ namespace robotcontrol {
 
     RobotDataCal();
 
-    RobotData convert_robotdata(RobotData robotdata);
-    std::array<double,3> err_robotposition_cal(RobotData robotdata);
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> convert_robotdata(std::vector<double> master_data,
+        std::vector<double> copy_data, std::vector<double> partner_master_data);
+    std::array<double,3> err_robotposition_cal(std::vector<double> master_data, std::vector<double> copy_data);
     std::vector<double> MRobot_Linear_PositionCal(std::vector<double> data, int time);
     private:
     std::vector<double> convert_m_rad(std::vector<double> data);
+
+    std::array<double,3> err_data; // エラー値を格納する配列
 
 
 

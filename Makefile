@@ -5,14 +5,14 @@
 
 CC       := /usr/bin/g++
 AR       := /usr/bin/ar
-CFLAGS   := -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
+CFLAGS   := -std=c++11 -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm
 TARGET   := forcecontrol
 
 # ソースファイル (必要に応じて追加)
-SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/csv_edit.cpp
+SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp
 
 # オブジェクトファイル (自動生成)
 OBJS     := $(SRCS:.cpp=.o)
