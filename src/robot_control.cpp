@@ -6,9 +6,9 @@ namespace robotcontrol{
     RobotControl::RobotControl(){
         Integral = std::vector<double> {0,0,0};
         Derivative = std::vector<double> {0,0,0};
-        Kp = 15; // medium 6.5 high 25
-        Ki = 0.02;
-        Kd = 7; // medium 2.5 high 17
+        Kp = 6.5; // medium 6.5 high 25
+        Ki = 0.66;
+        Kd = 0.21; // medium 2.5 high 17
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
         Kp = kp;
@@ -18,7 +18,7 @@ namespace robotcontrol{
     //private
     // public
     //[Vc] PID Closed Loop Control Velocity Command
-    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data){
+    Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data, int dt){
         int i;
         //printf("Global Velocity Matrix Command");
         for(i=0;i<3;i++){
@@ -26,7 +26,7 @@ namespace robotcontrol{
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
             Integral[i]		+= err_data[i];								//Calculate the integral term
             Derivative[i]	= err_data[i] - last_err_data[i];						//Calculate the derivative term
-            velocity_data[i] = Kp*err_data[i] + Ki*Integral[i] + Kd*Derivative[i];	//Calculate the output term
+            velocity_data[i] = Kp*err_data[i] + Ki*Integral[i] * dt + Kd*Derivative[i] / dt;	//Calculate the output term
         //	printf("%+.4f",Vc[i]);
         }
         return velocity_data;
