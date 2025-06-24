@@ -23,7 +23,7 @@ void end_task(int signum){
 
 void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
-    std::cout << "================== show data ==================" << std::endl;/*
+    std::cout << "================== show data ==================" << std::endl;
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
               << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
               << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
@@ -54,7 +54,7 @@ void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
     std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[4])) 
               << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[3]))
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
-              << std::endl;*/
+              << std::endl;
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
               << std::endl;
     std::cout << "==============================================" << std::endl;
@@ -106,7 +106,7 @@ int main(){
     std::chrono::microseconds micro_last_clock; 
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
-    std::chrono::microseconds micro_dt; //dt
+    std::chrono::microseconds micro_dt(30*1000); //dt
     std::chrono::microseconds dt(30*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // first clock
     /*
@@ -181,11 +181,11 @@ int main(){
         /*
         * robot control
         */
-        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data);        // PID control
+        mat3x1.velocity_data  = robot_control.CLPositionControllerPIDCal(robotdata.err_data, robotdata.last_err_data, micro_dt.count());        // PID control
         bool result = robot_control.VelocityLimitationCal(mat3x1.velocity_data);   // limit
         if (! result) {
             safety_count++;
-            if (safety_count > 60){
+            if (safety_count > 15){
                 std::cout << "強制終了" << std::endl;
                 stop_flag = true;
             }
