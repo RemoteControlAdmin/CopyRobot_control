@@ -25,8 +25,9 @@ namespace robotcontrol{
     //[Vc] Unilateral with Force 
 
     std::vector<double> RobotControl::corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data){
+        std::vector<double> corrected_data(3);
         for (int i = 0; i < 3; i++) {
-            std::vector<double> corrected_data[i] = master_data[i] - force_pos_data[i];
+            corrected_data[i] = master_data[i] - force_pos_data[i];
         }
         return corrected_data;
     }
