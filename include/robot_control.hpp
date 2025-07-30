@@ -27,8 +27,8 @@ namespace robotcontrol {
     private:
     std::vector<double> corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data);
 
-    Eigen::Vector3d Integral;
-    Eigen::Vector3d Derivative;
+    std::vector<double> Integral;
+    std::vector<double> Derivative;
 
     Eigen::Vector3d Integral_force;
     Eigen::Vector3d Derivative_force;
