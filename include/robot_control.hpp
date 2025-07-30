@@ -27,8 +27,8 @@ namespace robotcontrol {
     private:
     
 
-    std::vector<double> Integral;
-    std::vector<double> Derivative;
+    Eigen::Vector3d Integral;
+    Eigen::Vector3d Derivative;
 
     Eigen::Vector3d velocity_data;
 
