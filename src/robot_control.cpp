@@ -41,7 +41,7 @@ namespace robotcontrol{
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
-        pid_force_data = Kp_force * force_err + Ki_force * Integral * (microdt*1e-6) + Kd_force * Derivative / (microdt*1e-6);	//Calculate the output term
+        pid_force_data = Kp_force * force_err + Ki_force * Integral_force * (microdt*1e-6) + Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
 
         force_pos_data = pid_force_data / 800;
 
