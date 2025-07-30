@@ -41,7 +41,6 @@ namespace robotcontrol {
 
     double Kp, Ki, Kd;
     double Kp_force, Ki_force, Kd_force;
-    double force_err;
     double last_force_err;
 
 
