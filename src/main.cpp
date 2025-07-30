@@ -99,6 +99,10 @@ int main(){
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::vector<double> temp_copy_data(12, 0.0);
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
+
+    // 力制御によるmasterロボットの一次変数
+    std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
+
     // 送信用変数
     std::vector<double> send_data(26, 0.0);
     // dt計算用 dt calculation
@@ -169,7 +173,7 @@ int main(){
         temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
         //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
-        robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
+        
         
         /*
         *  force getting
@@ -178,6 +182,9 @@ int main(){
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
 
+        force_control_data = robot_control.unilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
+            robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); // force control
+        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
         /*
         * robot control
         */

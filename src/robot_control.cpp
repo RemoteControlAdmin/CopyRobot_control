@@ -9,6 +9,10 @@ namespace robotcontrol{
         Kp = 6.5; // medium 6.5 high 25
         Ki = 0.66;
         Kd = 0.21; // medium 2.5 high 17
+
+        Kp_force = 20; // medium 0.5 high 1.0
+        Ki_force = 2; // medium 0.01 high 0.1
+        Kd_force = 10; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
         Kp = kp;
@@ -17,6 +21,36 @@ namespace robotcontrol{
     }
     //private
     // public
+
+    //[Vc] Unilateral with Force 
+
+    std::vector<double> RobotControl::corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data){
+        for (int i = 0; i < 3; i++) {
+            std::vector<double> corrected_data[i] = master_data[i] - force_pos_data[i];
+        }
+        return corrected_data;
+    }
+
+    std::vector<double> RobotControl::unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
+         std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt){
+        actual_vector_data = {force_actual_data[0]*cos(force_virtual_data[4]), force_actual_data[0]*sin(force_virtual_data[4]), 0};
+        ideal_vector_data = {force_ideal_data[0], force_ideal_data[1], 0};
+        force_err = ideal_vector_data - actual_vector_data; // Force error
+
+        //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
+        Integral		+= force_err;								//Calculate the integral term
+        Derivative	= force_err - last_force_err;						//Calculate the derivative term
+        pid_force_data = Kp_force * force_err + Ki_force * Integral * (microdt*1e-6) + Kd_force * Derivative / (microdt*1e-6);	//Calculate the output term
+
+        force_pos_data = pid_force_data / 800;
+
+        last_force_err = force_err; // Update last force error for next iteration
+        std::vector<double> corrected_data = RobotControl::corrected_pos(master_data, force_pos_data);
+        //	printf("%+.4f",Vc[i]);
+        return corrected_data;
+    }
+
+
     //[Vc] PID Closed Loop Control Velocity Command
     Eigen::Vector3d RobotControl::CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data, int microdt){
         int i;

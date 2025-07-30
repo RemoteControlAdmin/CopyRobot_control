@@ -16,7 +16,11 @@ namespace robotcontrol {
 
     void chenge_pid(double kp, double ki, double kd);
 
-    Eigen::Vector3d CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data, int dt);
+    Eigen::Vector3d unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
+         std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt);
+
+    Eigen::Vector3d CLPositionControllerPIDCal(std::array<double, 3> err_data, std::array<double, 3> last_err_data, int microdt);
+
     bool VelocityLimitationCal(Eigen::Vector3d velocity_data);
 
 
@@ -27,8 +31,18 @@ namespace robotcontrol {
     std::vector<double> Derivative;
 
     Eigen::Vector3d velocity_data;
-    
+
+    Eigen::Vector3d actual_vector_data;
+    Eigen::Vector3d ideal_vector_data;
+    Eigen::Vector3d force_err;
+    Eigen::Vector3d pid_force_data;
+
+    Eigen::Vector3d force_pos_data;
+
     double Kp, Ki, Kd;
+    double Kp_force, Ki_force, Kd_force;
+    double force_err;
+    double last_force_err;
 
 
 
