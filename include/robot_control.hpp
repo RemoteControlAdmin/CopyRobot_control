@@ -30,6 +30,9 @@ namespace robotcontrol {
     Eigen::Vector3d Integral;
     Eigen::Vector3d Derivative;
 
+    Eigen::Vector3d Integral_force;
+    Eigen::Vector3d Derivative_force;
+
     Eigen::Vector3d velocity_data;
 
     Eigen::Vector3d actual_vector_data;
