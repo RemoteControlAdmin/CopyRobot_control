@@ -35,13 +35,13 @@ namespace robotcontrol {
     Eigen::Vector3d actual_vector_data;
     Eigen::Vector3d ideal_vector_data;
     Eigen::Vector3d force_err;
+    Eigen::Vector3d last_force_err;
     Eigen::Vector3d pid_force_data;
 
     Eigen::Vector3d force_pos_data;
 
     double Kp, Ki, Kd;
     double Kp_force, Ki_force, Kd_force;
-    double last_force_err;
 
 
 
