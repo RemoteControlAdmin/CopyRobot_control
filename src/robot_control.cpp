@@ -34,8 +34,17 @@ namespace robotcontrol{
 
     std::vector<double> RobotControl::unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
          std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt){
-        actual_vector_data(force_actual_data[0]*cos(force_virtual_data[4]), force_actual_data[0]*sin(force_virtual_data[4]), 0);
-        ideal_vector_data(force_ideal_data[0], force_ideal_data[1], 0);
+        actual_vector_data = Eigen::Vector3d(
+            force_actual_data[0] * std::cos(force_virtual_data[4]),
+            force_actual_data[0] * std::sin(force_virtual_data[4]),
+            0.0
+        );
+
+        ideal_vector_data = Eigen::Vector3d(
+            force_ideal_data[0],
+            force_ideal_data[1],
+            0.0
+        );
         force_err = ideal_vector_data - actual_vector_data; // Force error
 
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
