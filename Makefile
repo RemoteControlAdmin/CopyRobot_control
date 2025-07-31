@@ -1,21 +1,21 @@
 # Improved Makefile
-# - compile forcecontrol as static executable
-# - test utility can be compiled separately
-# (c) mobalean LLC
-
 CC       := /usr/bin/g++
+CC_C     := /usr/bin/gcc
 AR       := /usr/bin/ar
-CFLAGS   := -std=c++11 -O3 -Wall -marm -funroll-loops -march=armv7-a -mtune=cortex-a8 -mfpu=neon
+CFLAGS   := -std=c++11 -O3 -Wall -funroll-loops
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm
-TARGET   := forcecontrol
+TARGET   := firstcheck
 
-# ソースファイル (必要に応じて追加)
-SRCS     :=  src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp
+# ソースファイル
+CPPSRCS  := src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp \
+            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp
 
-# オブジェクトファイル (自動生成)
-OBJS     := $(SRCS:.cpp=.o)
+CSRCS    := src/rp1-spi-util.c src/rp1-spi.c src/rpi5-rp1-spi.c
+
+# オブジェクトファイル
+OBJS     := $(CPPSRCS:.cpp=.o) $(CSRCS:.c=.o)
 
 # デフォルトターゲット
 all: $(TARGET)
@@ -24,12 +24,14 @@ all: $(TARGET)
 $(TARGET): $(OBJS)
 	$(CC) $(OBJS) $(LDFLAGS) -o $(TARGET)
 
-# コンパイル処理
+# C++ コンパイル
 %.o: %.cpp
 	$(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -c -o $@ $<
 
+# C コンパイル
+%.o: %.c
+	$(CC_C) -O3 -Wall $(DEFINES) $(INCLUDES) -c -o $@ $<
+
 # クリーン処理
 clean:
-	-rm -f $(TARGET) *.o *.elf *.gdb
-
-.PHONY: all clean
+	-rm -f $(TARGET) src/*.o

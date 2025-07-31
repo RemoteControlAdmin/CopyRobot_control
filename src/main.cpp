@@ -82,10 +82,10 @@ int main(){
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
-    forceget::ForceActual force_actual{}; // force actual
-    forceget::ForceIdeal force_ideal{}; // force ideal
+    //forceget::ForceActual force_actual{}; // force actual
+    //forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
-    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.201", 65000, 26); // UDP初期化
+    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
     /*
     * ローカル変数定義　local variable definition
     */
@@ -107,7 +107,7 @@ int main(){
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
     std::chrono::microseconds micro_dt(30*1000); //dt
-    std::chrono::microseconds dt(30*1000); // calculation cycle
+    std::chrono::microseconds dt(10*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // first clock
     /*
     * ============== 処理 process ==============
@@ -174,9 +174,9 @@ int main(){
         /*
         *  force getting
         */
-        robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
-        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
-        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+        //robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
+        //robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
+        //robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
 
         /*
         * robot control
@@ -202,8 +202,12 @@ int main(){
         * move robot
         */
         mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
-        motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
-
+        //motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
+        bool motror_result = motor_control.send_voltage(mat3x1.mortor_voltage[0], mat3x1.mortor_voltage[1], mat3x1.mortor_voltage[2]);
+        if (!motror_result) {
+            std::cout << "Voltage out of range. Motor control failed." << std::endl;
+            stop_flag = true; // Stop the program if voltage is out of range
+        }
         robotdata.last_err_data = robotdata.err_data;
 
         // デバック用 debug
@@ -222,8 +226,9 @@ int main(){
         send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
         send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
         send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
+        
         udpConnection_raspberrypi.udp_send(send_data, send_time);
-        //show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
         /*
         *  adjusting the cycle
         */
@@ -242,7 +247,6 @@ int main(){
     // 終了前の後始末
     udp_thread_master.join(); // UDP receive thread from master
     udp_thread_copy.join(); // UDP receive thread from copy
-    motor_control.DisableMotorDrive();
     std::cout << "[INFO] Program terminated gracefully." << std::endl;
     std::cout << "Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
     return 0;

@@ -1,190 +1,100 @@
-# include "motor_control.hpp"
+#include "motor_control.hpp"
 
 namespace motorcontrol{
     MotorControl* MotorControl::instance = nullptr; // make instans
     MotorControl::MotorControl(){
-        instance = this;
-        setperiod_channel();    // initialize pwm
+        if (!MotorControl::dummy_spi0_initialize()) {
+            printf("SPI0初期化失敗\n");
+            return;
+        }
+
+         // rp1_t* setup_rp1();                                    
+        rp1 = setup_rp1();
+        if (!rp1) { printf("RP1初期化失敗\n");             //rp1初期化
+                                    return ;  }
+            
+        spi0 = setup_spi(rp1, 0); // SPI0初期化(固定,チャンネル)
+        spi1 = setup_spi(rp1, 1); // SPI1初期化(固定,チャンネル)
+        spi2 = setup_spi(rp1, 2); //SPI2初期化(固定,チャンネル)
+        
+        uint8_t on=0xFA;
+        send_spi(spi1, on);
+        
     }
 
-    /*
-    *    ========= private =========
-    */
-    void MotorControl::setperiod_channel(){
-        /*
-        * pwmの初期化と各チャンネルの周期を設定 Initialize pwm and set the period for each channel
-        */
-        system("bash config_pin.sh");//Call script file to setup PWM pin
-        frequencyWrite(pwm_1, DCM1A, period);//Set period for each channel
-        frequencyWrite(pwm_1, DCM1B, period);
-        frequencyWrite(pwm_2, DCM2A, period);
-        frequencyWrite(pwm_2, DCM2B, period);
-        frequencyWrite(pwm_3, DCM3A, period);
-        frequencyWrite(pwm_3, DCM3B, period);
-    }
-
-    void MotorControl::pinMode(int pin, const char *direction){
-        /*
-        * GPIO ピンの方向（入出力方向）の設定　Setting the GPIO pin direction (input/output direction)
-        */
-        snprintf(Pathbufdat, sizeof(Pathbufdat), "%s%d/direction", "/sys/class/gpio/gpio", pin);
-        int fd_direction = open(Pathbufdat, O_WRONLY);
-        if (fd_direction == -1) {
-            perror("Error opening direction file");
-            exit(EXIT_FAILURE);
-        }
-        if (write(fd_direction, direction, strlen(direction)) == -1) {
-            perror("Error writing to direction");
-
-            exit(EXIT_FAILURE);
-        }
-        close(fd_direction);
-    }
-
-    void MotorControl::digitalWrite(int pin, int value){
-        /*
-        *  GPIOに high/low を書き込む　Write the high/low in GPIO 
-        */
-        snprintf(Pathbufdat, sizeof(Pathbufdat), "%s%d/value", "/sys/class/gpio/gpio", pin);
-        int fd_value = open(Pathbufdat, O_WRONLY);
-        if (fd_value == -1) {
-            perror("Error opening value file");
-            exit(EXIT_FAILURE);
-        }
-        snprintf(DObufdat, sizeof(DObufdat), "%d", value);
-    
-        if (write(fd_value, DObufdat, strlen(DObufdat)) == -1) {
-            perror("Error writing to value");
-            exit(EXIT_FAILURE);
-        }
-        close(fd_value);
-    }
-
-    void MotorControl::frequencyWrite(int chip, int channel, int Period) {
-        /*
-        * pwmの周期を設定（ナノ秒） Settings about pwd cycle (nano sec)
-        */
-        char path[50];
-        sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/period", chip, chip, channel);
-        int period_fd = open(path, O_WRONLY);
-        if (period_fd == -1) {
-            perror("Error opening period file");
-            exit(EXIT_FAILURE);
-        }
-        dprintf(period_fd, "%d", Period);
-        close(period_fd);
-    }
-
-    
-    void MotorControl::analogWrite(int chip, int channel, int duty_cycle) {
-        /*
-        * pwmのデューティ比を設定 Analog write a duty of a PWM pin
-        */
-        char path[50];
-        sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/duty_cycle", chip, chip, channel);
-        int duty_cycle_fd = open(path, O_WRONLY);
-        if (duty_cycle_fd == -1) {
-            perror("Error opening duty_cycle file");
-            exit(EXIT_FAILURE);
-        }
-        dprintf(duty_cycle_fd, "%d", duty_cycle);
-        close(duty_cycle_fd);
-    }
-
-    
-    void MotorControl::enable_pwm(int chip, int channel) {
-        /*
-        * PWM出力を有効化 Set the enable of a PWM pin
-        */
-        char path[50];
-        sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/enable", chip, chip, channel);    
-        int enable_fd = open(path, O_WRONLY);
-        if (enable_fd == -1) {
-            perror("Error opening enable file");
-            exit(EXIT_FAILURE);
-        }
-        dprintf(enable_fd, "1");
-        close(enable_fd);
-    }
-
-    
-    void MotorControl::disable_pwm(int chip, int channel) {
-        /*
-        * PWM出力を無効化 Set the disable of a PWM pin
-        */
-         char path[50];
-        sprintf(path, "/sys/class/pwm/pwmchip%d/pwm-%d:%d/enable", chip, chip, channel); 
-        int enable_fd = open(path, O_WRONLY);
-        if (enable_fd == -1) {
-            perror("Error opening enable file for disabling PWM");
-            exit(EXIT_FAILURE);
-        }
-        dprintf(enable_fd, "0");
-        close(enable_fd);
-    }
-    /*
-    void MotorControl::handle_termination(int signum) {
-        if(instance != nullptr){
-            instance->DisableMotorDrive(); // インスタンス経由で呼び出す
-            close(instance->Possock);      // インスタンス経由でアクセスする
-        }
-    }*/
-
-    /*
-    *    ========= public =========
-    */
-    Eigen::Vector3d MotorControl::convert_wheeltovoltage(Eigen::Vector3d forwheelvelocity){
+     Eigen::Vector3d MotorControl::convert_wheeltovoltage(Eigen::Vector3d forwheelvelocity){
         mortor_voltage = forwheelvelocity * wwtovoltgain;
 
         return mortor_voltage;
     }
 
-    //Enable DC motor drive
-    void MotorControl::EnableMotorDrive(Eigen::Vector3d mortor_voltage){
+
+    /*
+    *    ========= private =========
+    */
+    bool MotorControl::send_voltage(float V1,float V2,float V3){
+
+        if((-12.0<=V1 && V1<=12.0)&&(-12.0<=V2 && V2<=12.0)&&(-12.0<=V3 && V3<=12.0)){
+
+            uint16_t hexa12=Input_value1(V1,V2);
+            uint8_t hexa3=Input_value2(V3);
         
-        // Set GPIO directions
-        pinMode(EN1, "out");
-        pinMode(EN2, "out");
-        pinMode(EN3, "out");
-        // Write digital value
-        digitalWrite(EN1, 1);
-        digitalWrite(EN2, 1);
-        digitalWrite(EN3, 1);
-
-        int V1A_peri = abs(((+(0.5*mortor_voltage[0])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-        int V1B_peri = abs(((-(0.5*mortor_voltage[0])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-        int V2A_peri = abs(((+(0.5*mortor_voltage[1])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-        int V2B_peri = abs(((-(0.5*mortor_voltage[1])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-        int V3A_peri = abs(((+(0.5*mortor_voltage[2])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-        int V3B_peri = abs(((-(0.5*mortor_voltage[2])+6.0)/Vss)*period); //Period unit that take a absolute, because the PWM is a positive side only)
-
-        // Enable PWM channels
-        enable_pwm(pwm_1, DCM1A);
-        enable_pwm(pwm_1, DCM1B);
-        enable_pwm(pwm_2, DCM2A);
-        enable_pwm(pwm_2, DCM2B);
-        enable_pwm(pwm_3, DCM3A);
-        enable_pwm(pwm_3, DCM3B);
-        // Set duty cycle for each channel
-        analogWrite(pwm_1, DCM1A, V1A_peri);
-        analogWrite(pwm_1, DCM1B, V1B_peri);
-        analogWrite(pwm_2, DCM2A, V2A_peri);
-        analogWrite(pwm_2, DCM2B, V2B_peri);
-        analogWrite(pwm_3, DCM3A, V3A_peri);
-        analogWrite(pwm_3, DCM3B, V3B_peri);  
-        return;  
+            send_spi(spi0, hexa12); // SPI0送信
+            send_spi(spi1, hexa3);  // SPI1送信
+            
+            return true;
+        }
+        return false;
     }
+
+   bool MotorControl::dummy_spi0_initialize(const char *device,
+                                            uint8_t mode,
+                                            uint8_t bits,
+                                            uint32_t speed){
+    int fd = open(device, O_RDWR);
+    if (fd < 0) {
+        perror("SPI0 open failed");
+        return false;
+    }
+
+    if (ioctl(fd, SPI_IOC_WR_MODE, &mode) == -1 ||
+        ioctl(fd, SPI_IOC_WR_BITS_PER_WORD, &bits) == -1 ||
+        ioctl(fd, SPI_IOC_WR_MAX_SPEED_HZ, &speed) == -1) {
+        perror("SPI0 dummy init ioctl failed");
+        close(fd);
+        return false;
+    }
+
+    // ★ 1回だけ送信しておく（ここがカギ！）
+    uint16_t tx = 0x0000;
+    uint16_t rx = 0;
+    struct spi_ioc_transfer tr{};
+    tr.tx_buf = reinterpret_cast<unsigned long>(&tx);
+    tr.rx_buf = reinterpret_cast<unsigned long>(&rx);
+    tr.len = sizeof(tx);
+    tr.speed_hz = speed;
+    tr.bits_per_word = bits;
+
+    if (ioctl(fd, SPI_IOC_MESSAGE(1), &tr) < 1) {
+        perror("SPI0 dummy transfer failed");
+        close(fd);
+        return false;
+    }
+
+    close(fd);
+    return true;
+
+
+    // 通信はせず，クローズ
+    close(fd);
+    return true;
+}
+
     //Disable DC motor drive
-    void MotorControl::DisableMotorDrive(){
-        disable_pwm(pwm_1, DCM1A);
-        disable_pwm(pwm_1, DCM1B);
-        disable_pwm(pwm_2, DCM2A);
-        disable_pwm(pwm_2, DCM2B);
-        disable_pwm(pwm_3, DCM3A);
-        disable_pwm(pwm_3, DCM3B);
-        digitalWrite(EN1, 0);
-        digitalWrite(EN2, 0);
-        digitalWrite(EN3, 0);
+    MotorControl::~MotorControl(){
+
+        send_spi(spi1, 0xF9); // SPI1に終了信号を送信
+
         return;  
     }
     

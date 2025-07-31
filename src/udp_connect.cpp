@@ -38,6 +38,11 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
 
 // UDP送信関数（double型データを送信）
 void UdpConnect::udp_send(const std::vector<double>& values, int64_t roop_count) {
+    if (values.size() * sizeof(double) != buffer_size) {
+        std::cerr << "Error: values.size() does not match buffer_size!" << std::endl;
+        std::cerr << "Expected size: " << buffer_size / sizeof(double) << ", Actual size: " << values.size() << std::endl;
+        return;
+    }
     // valuesの値をbafferにコピー
     std::memcpy(buffer, values.data(), buffer_size);
     // nano_system_clockをbafferの末尾にコピー
