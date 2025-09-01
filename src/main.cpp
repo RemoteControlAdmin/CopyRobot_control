@@ -178,12 +178,13 @@ int main(){
         /*
         *  force getting
         */
-        robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
-        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
-        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+        //robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
+        //robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
+        //robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
 
+        // force control
         force_control_data = robot_control.unilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
-            robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); // force control
+            robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); 
         robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
         /*
         * robot control
