@@ -1,7 +1,8 @@
 #include "data_logger.hpp"
 
 DataLogger::DataLogger(): csvWriter("output_file/" + get_my_name() + ".csv"),
-                            csv_vector(26, 0.0)    
+                        csv_vector(26, 0.0),
+                        udpConnection_monitor("100.124.38.52", 52222, 7)
                         {
     initialize_csv();
 }
@@ -15,7 +16,7 @@ std::string  DataLogger::get_my_name(){
     }
 
     std::string hostname_str(hostname);
-    return hostname_str.substr(6);
+    return (hostname_str.substr(6)).substr(0,3);
 }
 
 void DataLogger::initialize_csv(){
@@ -94,6 +95,31 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
     std::cout << "==============================================" << std::endl;
 }
 
+void DataLogger::send_monitor(RobotData robotdata, double delay_time, int64_t receive_clock){
+    // UDPでモニタにデータを送信する関数
+    udp_vector.clear();
+    udp_vector.insert(udp_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); //
+    udp_vector.insert(udp_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+2); 
+    udp_vector.insert(udp_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+2); // 6
+    udp_vector.push_back(delay_time);
+    udpConnection_monitor.udp_send(udp_vector, receive_clock);
+}
+
+void DataLogger::move_data(){
+    std::string local_file = "output_file/" + get_my_name() + ".csv";
+    std::string remote_path = R"(/mnt/shared_csv/)" + get_my_name() + ".csv"; // 共有フォルダのパスを指定
+    std::cout << "[INFO] Moving file " << remote_path << std::endl;
+    try {
+        std::filesystem::copy_file(local_file, remote_path, std::filesystem::copy_options::overwrite_existing);
+        // 移動にしたい場合は元ファイルを削除
+        //std::filesystem::remove(local_file);
+        std::cout << "[INFO] File move completed" << std::endl;
+    } catch (std::filesystem::filesystem_error& e) {
+        std::cerr << "[ERROR] " << e.what() << std::endl;
+    }
+}
+
 DataLogger::~DataLogger(){
+    move_data();
 
 }

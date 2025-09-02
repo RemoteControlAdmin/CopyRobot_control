@@ -2,7 +2,7 @@
 CC       := /usr/bin/g++
 CC_C     := /usr/bin/gcc
 AR       := /usr/bin/ar
-CFLAGS   := -std=c++11 -O3 -Wall -funroll-loops
+CFLAGS   := -std=c++20 -O3 -Wall -funroll-loops
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm

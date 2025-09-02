@@ -5,6 +5,7 @@
 # include <cmath>
 # include <iterator>
 # include <iostream>
+# include <cstdlib>
 # include "common.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
@@ -22,8 +23,20 @@ void end_task(int signum){
     }
 }
 
+void set_cpu_governor(const std::string& governor) {
+    // CPUのガバナーを設定する関数
+    std::string command = "sudo cpufreq-set -g" + governor;
+    int ret = system(command.c_str());
+    if (ret != 0) {
+        std::cerr << "Error setting CPU governor to " << governor << std::endl;
+    } else {
+        std::cout << "\n[INFO] CPU governor set to " << governor << std::endl;
+    }
+}
+
 
 int main(){
+    set_cpu_governor("performance");
     std::cout << "================== runnning ==================" << std::endl;
     // 強制終了処理　end proccess
     std::signal(SIGINT, end_task);
@@ -182,7 +195,7 @@ int main(){
         double delay_time = (nano_receive_clock.count() - send_time)/ 1000000.0;
         data_logger.save_csv(robotdata, mat3x1, send_time, nano_receive_clock.count(),delay_time);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time);
-
+        data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*
         *  adjusting the cycle
         */
@@ -199,10 +212,11 @@ int main(){
         //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
+    set_cpu_governor("ondemand");
     udp_thread_master.join(); // UDP receive thread from master
     udp_thread_copy.join(); // UDP receive thread from copy
     std::cout << "[INFO] Program terminated gracefully." << std::endl;
-    std::cout << "Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
+    std::cout << "[Warning] Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
     return 0;
-
+    
 }
