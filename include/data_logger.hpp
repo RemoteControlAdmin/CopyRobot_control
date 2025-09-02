@@ -22,8 +22,8 @@ class DataLogger{
     public:
         DataLogger();
         
-        void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt);
-        void save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock); 
+        void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time);
+        void save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time); 
         
         ~DataLogger();
 };

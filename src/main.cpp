@@ -179,8 +179,9 @@ int main(){
         */
         current_clock = std::chrono::high_resolution_clock::now();
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
-        data_logger.save_csv(robotdata, mat3x1, send_time, nano_receive_clock.count());
-        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        double delay_time = (nano_receive_clock.count() - send_time)/ 1000000.0;
+        data_logger.save_csv(robotdata, mat3x1, send_time, nano_receive_clock.count(),delay_time);
+        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time);
 
         /*
         *  adjusting the cycle

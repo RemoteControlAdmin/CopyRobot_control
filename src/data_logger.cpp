@@ -28,10 +28,9 @@ void DataLogger::initialize_csv(){
                             "FIdeaM","FIdeaA"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time){
     // デバック用 debug
     csv_vector.clear();
-    double delay_time = (receive_clock - send_clock)/ 1000000.0;
     csv_vector.push_back(delay_time);
     //csv_vector.insert(csv_vector.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
     for (const auto& val : robotdata.err_data) {
@@ -54,7 +53,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
 
 
 // データを表示する関数
-void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
+void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
     std::cout << "================== show data ==================" << std::endl;
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
@@ -89,6 +88,8 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
               << std::endl;
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Delay = " + std::to_string(delay_time)) 
               << std::endl;
     std::cout << "==============================================" << std::endl;
 }
