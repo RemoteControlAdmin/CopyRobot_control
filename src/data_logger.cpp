@@ -31,6 +31,8 @@ void DataLogger::initialize_csv(){
 void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock){
     // デバック用 debug
     csv_vector.clear();
+    double delay_time = (receive_clock - send_clock)/ 1000000.0;
+    csv_vector.push_back(delay_time);
     //csv_vector.insert(csv_vector.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
     for (const auto& val : robotdata.err_data) {
         csv_vector.push_back(val * 1000);

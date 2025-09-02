@@ -54,7 +54,7 @@ int main(){
     */
     int64_t send_time = 0; // 送信時間 send time
     // システムクロック定義
-    std::chrono::nanoseconds nano_receive_clock;
+    std::chrono::nanoseconds nano_receive_clock = std::chrono::nanoseconds(0); // 受信時間 receive time 
     //構造体宣言
     RobotData robotdata;
     Mat3x1 mat3x1;
@@ -70,7 +70,7 @@ int main(){
     std::chrono::microseconds micro_last_clock; 
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds micro_current_clock;
-    std::chrono::microseconds micro_dt(30*1000); //dt
+    std::chrono::microseconds micro_dt(10*1000); //dt
     std::chrono::microseconds dt(10*1000); // calculation cycle
     std::chrono::microseconds first_clock;  // first clock
     /*
