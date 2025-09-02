@@ -10,7 +10,8 @@ TARGET   := firstcheck
 
 # ソースファイル
 CPPSRCS  := src/forward_kinematics.cpp src/inverce_kinematics.cpp src/main.cpp src/motor_control.cpp \
-            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp
+            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp\
+			src/data_logger.cpp
 
 CSRCS    := src/rp1-spi-util.c src/rp1-spi.c src/rpi5-rp1-spi.c
 

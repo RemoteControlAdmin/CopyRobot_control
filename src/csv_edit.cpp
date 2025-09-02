@@ -5,12 +5,22 @@
 
 namespace csv_lib{
 // コンストラクタ
-Csvedit::Csvedit(const std::string &filename) : filename(filename), file(filename, std::ios::app) {
+Csvedit::Csvedit(const std::string &filename) : filename(filename) {
+    // 既にファイルが存在する場合は削除
+    if (std::ifstream(filename)) {
+        if (std::remove(filename.c_str()) != 0) {
+            std::cerr << "既存ファイルの削除に失敗しました: " << filename << std::endl;
+        } else {
+            std::cout << "既存ファイルを削除しました: " << filename << std::endl;
+        }
+    }
+
+    // 新しくファイルを開く（上書きモード）
+    file.open(filename, std::ios::app);
     if (!file.is_open()) {
         std::cerr << "ファイルを開けませんでした: " << filename << std::endl;
     }
 }
-
 
 // ヘッダを設定する関数
 void Csvedit::csv_write_headers(const std::vector<std::string> &headers) {
@@ -29,23 +39,24 @@ void Csvedit::csv_write_headers(const std::vector<std::string> &headers) {
 }
 
 // データをCSVファイルに書き込むメソッド
-void Csvedit::csv_write_data(const std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds>  &data) {
+void Csvedit::csv_write_data(const std::pair<std::vector<int64_t>,std::vector<double>>   &data) {
 
     if (!file.is_open()) {
         std::cerr << "ファイルを開けませんでした: " << filename << std::endl;
         return;
     }
 
+    file << data.first[0];
+    file << ",";
+    file << data.first[1];
+    file << ",";
     // vector<double>のデータを書き込み
-    for (size_t i = 0; i < data.first.first.size(); ++i) {
-        file << data.first.first[i];
-        if (i < data.first.first.size()) {
+    for (size_t i = 0; i < data.second.size(); ++i) {
+        file << data.second[i];
+        if (i < data.second.size()) {
             file << ","; // カンマで区切る
         }
     }
-    file << data.first.second;
-    file << ",";
-    file << data.second. count();
     file << "\n"; // 行末に改行を追加
     file.flush();  // バッファの内容をファイルに書き込む
 

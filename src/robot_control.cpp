@@ -6,9 +6,9 @@ namespace robotcontrol{
     RobotControl::RobotControl(){
         Integral = std::vector<double> {0,0,0};
         Derivative = std::vector<double> {0,0,0};
-        Kp = 6.5; // medium 6.5 high 25
-        Ki = 0.66;
-        Kd = 0.21; // medium 2.5 high 17
+        Kp = 8; // medium 6.5 high 25
+        Ki = 0.2;
+        Kd = 0.4; // medium 2.5 high 17
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
         Kp = kp;

@@ -5,7 +5,6 @@
 # include <cmath>
 # include <iterator>
 # include <iostream>
-# include <iomanip>
 # include "common.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
@@ -13,51 +12,14 @@
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
 # include "force_get.hpp"
+#include "data_logger.hpp"
+
 
 void end_task(int signum){
     if(signum == SIGINT) {
         std::cout << "\n[INFO] Ctrl+C detected. Exiting..." << std::endl;
         stop_flag = 1;
     }
-}
-
-void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
-    std::cout << "\033[2J\033[1;1H"; // Clear the console
-    std::cout << "================== show data ==================" << std::endl;
-    std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
-              << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
-              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Cpx = " + std::to_string(robotdata.copy_data[0])) 
-              << std::left << std::setw(20) << ("Cpy = " + std::to_string(robotdata.copy_data[1]))
-              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("PMx = " + std::to_string(robotdata.partner_master_data[0])) 
-              << std::left << std::setw(20) << ("PMy = " + std::to_string(robotdata.partner_master_data[1]))
-              << std::left << std::setw(20) << ("PMt = " + std::to_string(robotdata.partner_master_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
-              << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
-              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
-              << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
-              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FEactM = " + std::to_string(robotdata.force_actual_data[0])) 
-              << std::left << std::setw(20) << ("FEactA = " + std::to_string(robotdata.force_actual_data[1]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FVirM = " + std::to_string(robotdata.force_virtual_data[4])) 
-              << std::left << std::setw(20) << ("FVirA = " + std::to_string(robotdata.force_virtual_data[3]))
-              << std::left << std::setw(20) << ("VirDir = " + std::to_string(robotdata.force_virtual_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[4])) 
-              << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[3]))
-              << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
-              << std::endl;
-    std::cout << "==============================================" << std::endl;
 }
 
 
@@ -85,11 +47,14 @@ int main(){
     //forceget::ForceActual force_actual{}; // force actual
     //forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
-    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
+    //udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
+    DataLogger data_logger{}; // data logger
     /*
     * ローカル変数定義　local variable definition
     */
     int64_t send_time = 0; // 送信時間 send time
+    // システムクロック定義
+    std::chrono::nanoseconds nano_receive_clock;
     //構造体宣言
     RobotData robotdata;
     Mat3x1 mat3x1;
@@ -99,8 +64,7 @@ int main(){
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::vector<double> temp_copy_data(12, 0.0);
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
-    // 送信用変数
-    std::vector<double> send_data(26, 0.0);
+
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
@@ -210,25 +174,14 @@ int main(){
         }
         robotdata.last_err_data = robotdata.err_data;
 
-        // デバック用 debug
-        send_data.clear();
-        //send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
-        for (const auto& val : robotdata.err_data) {
-            send_data.push_back(val * 1000);
-        }
-        //send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
-        for (int i = 0; i < mat3x1.velocity_data.size(); ++i) {
-            double val = mat3x1.velocity_data[i];
-            send_data.push_back(val * 1000);
-        }
-        send_data.insert(send_data.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
-        send_data.insert(send_data.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
-        send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
-        send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
-        send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
-        
-        udpConnection_raspberrypi.udp_send(send_data, send_time);
-        show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        /* 
+        * debug用保存および表示
+        */
+        current_clock = std::chrono::high_resolution_clock::now();
+        nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
+        data_logger.save_csv(robotdata, mat3x1, send_time, nano_receive_clock.count());
+        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+
         /*
         *  adjusting the cycle
         */
