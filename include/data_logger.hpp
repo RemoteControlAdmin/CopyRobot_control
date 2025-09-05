@@ -19,12 +19,13 @@ class DataLogger{
         std::pair<std::vector<int64_t>,std::vector<double>>  csv_data;
         udp_lib::UdpConnect udpConnection_monitor;
         
-
+        
         // 保存用データ
         std::vector<double> csv_vector;
         // udp用データ
         std::vector<double> udp_vector;
 
+        // データをサーバに保存する関数
         void move_data();
 
     public:

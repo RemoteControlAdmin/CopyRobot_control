@@ -11,7 +11,7 @@ std::string  DataLogger::get_my_name(){
     /* ホスト名（raspi-以下）を抽出する関数*/
     char hostname[256];
     if (gethostname(hostname, sizeof(hostname)) != 0){
-        std::cerr << "Error getting hostname" << std::endl;
+        std::cerr << "[Error] getting hostname" << std::endl;
         exit(1);
     }
 
@@ -56,7 +56,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
 // データを表示する関数
 void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
-    std::cout << "================== show data ==================" << std::endl;
+    std::cout << "================== Data  ==================" << std::endl;
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
               << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
               << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
@@ -84,7 +84,7 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
               << std::left << std::setw(20) << ("FVirA = " + std::to_string(robotdata.force_virtual_data[3]))
               << std::left << std::setw(20) << ("VirDir = " + std::to_string(robotdata.force_virtual_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[4])) 
+    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[4]))
               << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[3]))
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
               << std::endl;

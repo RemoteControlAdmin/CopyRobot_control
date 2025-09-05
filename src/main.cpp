@@ -163,7 +163,7 @@ int main(){
         if (! result) {
             safety_count++;
             if (safety_count > 15){
-                std::cout << "強制終了" << std::endl;
+                std::cout << "[Warning] Safety count exceeded]" << std::endl;
                 stop_flag = true;
             }
             //robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
@@ -182,7 +182,7 @@ int main(){
         //motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
         bool motror_result = motor_control.send_voltage(mat3x1.mortor_voltage[0], mat3x1.mortor_voltage[1], mat3x1.mortor_voltage[2]);
         if (!motror_result) {
-            std::cout << "Voltage out of range. Motor control failed." << std::endl;
+            std::cout << "[Error] Voltage out of range. Motor control failed." << std::endl;
             stop_flag = true; // Stop the program if voltage is out of range
         }
         robotdata.last_err_data = robotdata.err_data;
