@@ -7,13 +7,15 @@
 # include <iostream>
 # include <cstdlib>
 # include "common.hpp"
+# include "spi_service.hpp"
 # include "motor_control.hpp"
 # include "robot_data_cal.hpp"
 # include "robot_control.hpp"
 # include "inverce_kinematics.hpp"
 # include "udp_connect.hpp"
 # include "force_get.hpp"
-#include "data_logger.hpp"
+# include "data_logger.hpp"
+
 
 
 void end_task(int signum){
@@ -57,7 +59,7 @@ int main(){
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
-    //forceget::ForceActual force_actual{}; // force actual
+    forceget::ForceActual force_actual{}; // force actual
     //forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
     //udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
@@ -151,7 +153,7 @@ int main(){
         /*
         *  force getting
         */
-        //robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
+        robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
         //robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         //robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
 

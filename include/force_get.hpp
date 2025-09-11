@@ -2,6 +2,14 @@
 #define FORCE_GET_HPP
 
 #include <common.hpp>
+#include <iostream>
+#include "rp1-regs.h"
+#include "rp1-spi.h"
+#include "rp1-spi-regs.h"
+#include "rp1-spi-util.h"
+#include "pi_pico_commands.h"
+#include "rpi5-rp1-spi.h"
+
 // 必要なライブラリのインクルード
 
 namespace forceget { // 名前空間 (任意の名前，ソースと合わせること)
@@ -19,6 +27,10 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     //double FEActSwapCal(); // 力環境の実際の値をロボットフレームからグローバルフレームに変換する関数の宣言
     
     private: // 以下private関数と変数の宣言
+    ADCContext ctx;
+    ADCReadings rd;
+
+
     //===========Declaration the force sensor communication===========
     int ADC_AI0,ADC_AI1,ADC_AI2,ADC_AI3; // アナログ入力のインデックスを格納する変数の宣言
     double Volt0, Volt1, Volt2, Volt3; // アナログ入力の電圧値を格納する変数の宣言

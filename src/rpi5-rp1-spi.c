@@ -11,10 +11,12 @@
 #include "rp1-spi-regs.h"
 #include "rp1-spi-util.h"
 #include "pi_pico_commands.h"
+#include "rpi5-rp1-spi.h"
 
 #include <stdint.h>
 #include <unistd.h>
 #include <sys/ioctl.h>
+#include <linux/spi/spidev.h>
 #include <string.h>
 #include <signal.h>
 
@@ -61,9 +63,15 @@ void delay_ms(int milliseconds)
 #define REF_VOLTAGE 3.3
 
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// ==== MCP3208用 設定（直叩き読み取りに適用） ====
+// VREFは既存の #define REF_VOLTAGE 3.3 を使用
+
+#define REF_VOLTAGE 3.3
+#define SCALE 15.5038   // 電圧→力のスケール係数 α
+
+
+
+
 
 void *mapgpio(off_t dev_base, off_t dev_size)
 {
@@ -255,121 +263,258 @@ rp1_t* setup_rp1(){   // RP1 初期化
 
 
 // SPI初期化関数
-rp1_spi_instance_t* setup_spi(rp1_t *rp1,int ch){    // SPI初期化
-
+rp1_spi_instance_t* setup_spi(rp1_t *rp1, int ch,
+                              int mode, int data_bits,
+                              int baud_div, int frf)
+{
     rp1_spi_instance_t *spi;
-    //printf("spi=%p\n",spi);
     if (!rp1_spi_create(rp1, ch, &spi)) {
         printf("unable to create spi\n");
         return NULL;
     }
 
-    *(volatile uint32_t *)(spi->regbase + DW_SPI_SSIENR) = 0x0; // SPI無効化
-    switch(ch){
-     case 0: setup_spi0_pins(rp1); break;
-     case 1: setup_spi1_pins(rp1); break;
-     case 2: setup_spi2_pins(rp1); break;
-     case 3: setup_spi3_pins(rp1); break;
-     default: return NULL; // 無効なチャンネル
+    // ピン
+    switch (ch) {
+    case 0: setup_spi0_pins(rp1); break;
+    case 1: setup_spi1_pins(rp1); break;
+    case 2: setup_spi2_pins(rp1); break;
+    case 3: setup_spi3_pins(rp1); break;
+    default: return NULL;
     }
 
-    *(volatile uint32_t *)(spi->regbase + DW_SPI_BAUDR) = 200; // 10MHz設定（200/20）
+    // 既定値
+    if (data_bits <= 0) data_bits = (ch == 0) ? 16 : 8;
+    if (baud_div  <= 0) baud_div  = (ch == 0) ? 200 : 100;
+    if (frf       <  0) frf = 0;                  // Motorola
+    if (mode < 0 || mode > 3) mode = 0;          // MODE0
+    if (data_bits < 4)  data_bits = 4;
+    if (data_bits > 16) data_bits = 16;
+    if (baud_div & 1)   ++baud_div;              // 偶数に丸め
 
-    // SPIモード設定 (Mode1) と bit設定
-    uint32_t reg_ctrlr = *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0);
-    //reg_ctrlr0 |= DW_PSSI_CTRLR0_SCPHA;              // CPHA=1
-    reg_ctrlr &= ~DW_PSSI_CTRLR0_SCPHA;
-    reg_ctrlr &= ~DW_PSSI_CTRLR0_DFS_MASK;           // DFSビットクリア
+    // 無効化
+    *(volatile uint32_t *)(spi->regbase + DW_SPI_SSIENR) = 0x0;
 
+    // ボーレート
+    *(volatile uint32_t *)(spi->regbase + DW_SPI_BAUDR) = (uint32_t)baud_div;
 
-    if(ch==0){reg_ctrlr|= 0x0F;} // DFS=15 (16bit)
-    else if(ch==1||ch==2){reg_ctrlr |= 0x07;} // DFS=7 (8bit)
-    else{return NULL;}
+    // CTRLR0
+    uint32_t r = *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0);
 
-    
-    *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0) = reg_ctrlr;
+    // CPOL/CPHA（mode 0..3）
+    r &= ~DW_PSSI_CTRLR0_SCPOL;
+    r &= ~DW_PSSI_CTRLR0_SCPHA;
+    if (mode & 0x2) r |= DW_PSSI_CTRLR0_SCPOL;
+    if (mode & 0x1) r |= DW_PSSI_CTRLR0_SCPHA;
 
+    // データ長 DFS=[20:16] に (bits-1) をセット
+    r &= ~(0x1Fu << 16);
+    r |=  ((uint32_t)(data_bits - 1) << 16);
 
-    /*デバック
-   printf("ctrlr0 after setting: 0x%08X\n", reg_ctrlr);
-   printf("CTRLR0 = 0x%08X\n", *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0));
-   printf("baudr raw: %u\n", *(volatile uint32_t *)(spi->regbase + DW_SPI_BAUDR));
-   printf("baudr: %d MHz\n", 200 / *(volatile uint32_t *)(spi->regbase + DW_SPI_BAUDR));
-   */
-   
+    // フレームフォーマット（FRF は典型的に [5:4]）
+    r &= ~(0x3u << 4);
+    r |=  ((uint32_t)(frf & 0x3) << 4);
 
-    *(volatile uint32_t *)(spi->regbase + DW_SPI_SSIENR) = 0x1; // SPI有効化
+    *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0) = r;
 
+    // 有効化
+    *(volatile uint32_t *)(spi->regbase + DW_SPI_SSIENR) = 0x1;
+
+    // デバッグ：DFSをデコード表示（確認用）
+    uint32_t rchk = *(volatile uint32_t *)(spi->regbase + DW_SPI_CTRLR0);
+    unsigned dfs = ((rchk >> 16) & 0x1F) + 1;
+    printf("[spi%d] CTRLR0=0x%08X DFS=%u-bit mode=%d\n", ch, rchk, dfs, mode);
 
     return spi;
 }
 
 
+
 //ADC読み取り関数
-void read_ADC(rp1_spi_instance_t *spi2){
-
-    printf("Sending 8bit data...\n");
-
-  const double VREF = 3.30;  // MCP3208の基準電圧
-  //const uint8_t channels[4] = {0, 1, 2, 3};
-  uint8_t recieveData[4]; // 受信データ用バッファ
-
- while (1) {
-    uint8_t writeData[] = {0b00000110, 0x00, 0xFF};
-    
-    for (int ch = 0; ch < 4; ch++) {
-    switch(ch){
-      case 0:
-        writeData[1] = 0b00000000; 
-      break;
-
-      case 1:
-        writeData[1] = 0b01000000; 
-      break;
-      case 2:
-        writeData[1] = 0b10000000; 
-      break;
-      case 3:
-        writeData[1] = 0b11000000; 
-      break;
-    
-    }
-
-        // CSアサート
-        *(volatile uint32_t *)(spi2->regbase + DW_SPI_SER) = 1 << 0;  //CSnをLOWに
-
-
-    //データを送りきる!(データは送信順に溜まっていく)
-    for(int i = 0; i < 3; i++) {
-         while (!(*(volatile uint32_t *)(spi2->regbase + DW_SPI_SR) & DW_SPI_SR_TF_NOT_FULL)) {;} // 送信FIFOが空き待ち
-        *(volatile uint8_t *)(spi2->regbase + DW_SPI_DR) = writeData[i];                                // データ送信
-
-    }   
-    //データを読みまくる(溜まったものを順に) 
-    for (int i = 0; i < 3; i++) {
-         while (!(*(volatile uint32_t *)(spi2->regbase + DW_SPI_SR) & DW_SPI_SR_RF_NOT_EMPT)) {;} //受信データを待つ
-        recieveData[i] = *(volatile uint8_t *)(spi2->regbase + DW_SPI_DR);  
-    }                              //1byte受信
-
-    // CSデアサート
-     *(volatile uint32_t *)(spi2->regbase + DW_SPI_SER) = 0; //通信終了
-
-    // 受信3byteのデータから12bitを組立
-    uint16_t value = ((recieveData[1] & 0x0F) << 8) | recieveData[2]; //下位4bitだけ残し、8bitずらす
-    // 12bitの値を電圧に変換
-    double voltage = VREF * value / 4095.0; 
-
-    // printf("CH%u: %4u / 4095  (%.3f V)", ch, value, voltage);
-    printf("CH%u: %0.3f V  ", ch, voltage);
-
-
-
-    }
-
-    printf("\n");
-    usleep(10);  // 100ms 間隔
- }
+// ---- 8bitフレーム×3バイトの連続転送（直叩き）----
+static inline void spi_wait_tfnf(volatile uint32_t *sr) {
+    while (!(*sr & DW_SPI_SR_TF_NOT_FULL)) { /* wait */ }
 }
+static inline void spi_wait_rne(volatile uint32_t *sr) {
+    while (!(*sr & DW_SPI_SR_RF_NOT_EMPT)) { /* wait */ }
+}
+static inline void spi_wait_idle(volatile uint32_t *sr) {
+    while (*sr & DW_SPI_SR_BUSY) { /* wait */ }
+}
+// ---- RX FIFO を空にする（開始前に呼ぶ）----
+static inline void spi_flush_rx(volatile uint32_t *sr, volatile uint32_t *dr) {
+    while (*sr & DW_SPI_SR_RF_NOT_EMPT) {
+        (void)*dr; // 破棄読み
+    }
+}
+
+// ---- 8bit×3の全二重転送（完了待ち＆CS制御を厳密化）----
+static void mcp3208_xfer3(rp1_spi_instance_t *spi,
+                          const uint8_t tx[3], uint8_t rx[3])
+{
+    volatile uint32_t *SR  = (volatile uint32_t *)(spi->regbase + DW_SPI_SR);
+    volatile uint32_t *DR  = (volatile uint32_t *)(spi->regbase + DW_SPI_DR);
+    volatile uint32_t *SER = (volatile uint32_t *)(spi->regbase + DW_SPI_SER);
+
+    // 受信残りをクリア
+    spi_flush_rx(SR, DR);
+
+    // CS Low（CS0使用想定）
+    *SER = (1u << 0);
+
+    // 送信3バイト（DRはワードアクセス推奨：下位8bitのみ有効）
+    for (int i = 0; i < 3; ++i) {
+        spi_wait_tfnf(SR);
+        *(volatile uint32_t *)DR = (uint32_t)tx[i];
+    }
+
+    // 受信3バイト
+    for (int i = 0; i < 3; ++i) {
+        spi_wait_rne(SR);
+        rx[i] = (uint8_t)(*(volatile uint32_t *)DR & 0xFF);
+    }
+
+    // 送受信の完全終了を待ってから CS High
+    spi_wait_idle(SR);
+    *SER = 0;
+}
+
+// ---- 1ch読み取り（12bit組み立て）----
+static int mcp3208_read_ch_reg(rp1_spi_instance_t *spi, uint8_t ch)
+{
+    if (ch > 7) return -1;
+
+    // ここで（必要なら）SPI2の DFS=8bit, CPOL/CPHA=0, BAUDR=1MHz 等を
+    // “SPI2のCTRLR0/BAUDRのみ”に設定し，終了時に元へ戻すのが安全
+
+    uint8_t tx[3];
+    tx[0] = (uint8_t)(0x06 | ((ch & 0x04) >> 2)); // Start=1, SGL=1, D2
+    tx[1] = (uint8_t)((ch & 0x03) << 6);          // D1 D0 を上位2bitへ
+    tx[2] = 0x00;
+
+    uint8_t rx[3] = {0,0,0};
+    mcp3208_xfer3(spi, tx, rx);
+
+    // 12bit: [rx1下位4bit][rx2]
+    int value = ((rx[1] & 0x0F) << 8) | rx[2];
+    return value; // 0..4095
+}
+
+
+
+// ---- 変換ユーティリティ ----
+static inline double adc_to_voltage(int adc) {
+    return (adc / 4095.0) * (double)REF_VOLTAGE;
+}
+static inline double force_from_adc(int adc, double beta) {
+    return (double)SCALE * adc_to_voltage(adc) + beta;
+}
+
+// ---- 自動ゼロ校正（ゼロ荷重・静止状態で実行）----
+// β_i = -SCALE * V_{i,0}
+void auto_zero_calib_reg(rp1_spi_instance_t *spi,
+                         double *b_fax, double *b_fay,
+                         double *b_fbx, double *b_fby,
+                         int samples)
+{
+    if (samples <= 0) {
+        fprintf(stderr, "[ZERO] samples <= 0\n");
+        return;
+    }
+    if (!b_fax || !b_fay || !b_fbx || !b_fby) {
+        fprintf(stderr, "[ZERO] null beta pointer\n");
+        return;
+    }
+
+    int64_t sum_adc[4] = {0,0,0,0};
+    int     cnt[4]     = {0,0,0,0};
+
+    for (int n = 0; n < samples; ++n) {
+        for (int ch = 0; ch < 4; ++ch) {
+            int v = mcp3208_read_ch_reg(spi, (uint8_t)ch);
+            if (v < 0) {
+                // 失敗は平均から除外（ログのみ）
+                fprintf(stderr, "[ZERO] CH%d 読み取り失敗 (n=%d)\n", ch, n);
+                continue;
+            }
+            // 念のためクランプ（0..4095）
+            if (v < 0) v = 0;
+            else if (v > 4095) v = 4095;
+
+            sum_adc[ch] += v;
+            cnt[ch]     += 1;
+        }
+        usleep(1000);
+    }
+
+    // 有効サンプル確認
+    for (int ch = 0; ch < 4; ++ch) {
+        if (cnt[ch] == 0) {
+            fprintf(stderr, "[ZERO] CH%d 有効サンプル0：校正を中止\n", ch);
+            return;
+        }
+    }
+
+    // 平均ADCをdoubleで保持 → 電圧へ
+    const double a0 = (double)sum_adc[0] / (double)cnt[0];
+    const double a1 = (double)sum_adc[1] / (double)cnt[1];
+    const double a2 = (double)sum_adc[2] / (double)cnt[2];
+    const double a3 = (double)sum_adc[3] / (double)cnt[3];
+
+    // adc_to_voltage(double) が無ければ以下を使用：
+    // #define REF_VOLTAGE 3.3
+    // static inline double adc_to_voltage(double adc) { return (adc / 4095.0) * REF_VOLTAGE; }
+
+    const double v0 = adc_to_voltage(a0);
+    const double v1 = adc_to_voltage(a1);
+    const double v2 = adc_to_voltage(a2);
+    const double v3 = adc_to_voltage(a3);
+
+    // β_i = -SCALE * V_{i,0}
+    *b_fax = -SCALE * v0;
+    *b_fay = -SCALE * v1;
+    *b_fbx = -SCALE * v2;
+    *b_fby = -SCALE * v3;
+
+    printf("[ZERO] V0..3=[%.4f %.4f %.4f %.4f] -> "
+           "B=[fax=%.4f fay=%.4f fbx=%.4f fby=%.4f]\n",
+           v0, v1, v2, v3, *b_fax, *b_fay, *b_fbx, *b_fby);
+}
+
+//ADC読み取り関数（spidevに準拠）
+// ADC読み取り関数（直叩きのまま，設定・力計算・ゼロ校正を移植）
+
+mcp_result_t read_ADC(rp1_spi_instance_t *spi2, double b_fax, double b_fay, double b_fbx, double b_fby){
+    mcp_result_t result = {0};
+
+        struct timespec t0, t1;
+        clock_gettime(CLOCK_MONOTONIC, &t0);
+
+        for (int ch = 0; ch < 4; ++ch) {
+            int v = mcp3208_read_ch_reg(spi2, (uint8_t)ch);
+            if (v < 0) {
+                fprintf(stderr, "CH%d 読み取り失敗\n", ch);
+                return result;
+            }
+            result.raw[ch]  = v;
+            result.volt[ch] = adc_to_voltage(v);
+        }
+
+        result.force[0] = force_from_adc(result.raw[0], b_fax);
+        result.force[1] = force_from_adc(result.raw[1], b_fay);
+        result.force[2] = force_from_adc(result.raw[2], b_fbx);
+        result.force[3] = force_from_adc(result.raw[3], b_fby);
+
+        clock_gettime(CLOCK_MONOTONIC, &t1);
+        long dt_us = (t1.tv_sec - t0.tv_sec) * 1000000L
+                   + (t1.tv_nsec - t0.tv_nsec) / 1000L;
+
+        // 既存の出力体裁を極力維持
+        printf("| time=%ld us\n", dt_us);
+    
+    return result;
+}
+
+
 
 // SPI送信関数
 void send_spi(rp1_spi_instance_t *spi, uint16_t txdata){
@@ -393,7 +538,7 @@ void send_spi(rp1_spi_instance_t *spi, uint16_t txdata){
         while (!(*(volatile uint32_t *)(spi->regbase + DW_SPI_SR) & DW_SPI_SR_RF_NOT_EMPT)) {;}
         uint16_t rxdata = *(volatile uint16_t *)(spi->regbase + DW_SPI_DR);
 
-
+    
     //printf("Done sending 16bit data.\n");
 }
 
@@ -421,9 +566,6 @@ uint8_t Input_value2(float V3){
     //printf("hexa3=%X\n\n",value2);
     return value2;
 }
-#ifdef __cplusplus
-}
-#endif
 
 
 

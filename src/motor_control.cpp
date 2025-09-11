@@ -1,7 +1,6 @@
 #include "motor_control.hpp"
 
 namespace motorcontrol{
-    MotorControl* MotorControl::instance = nullptr; // make instans
     MotorControl::MotorControl(){
         if (!MotorControl::dummy_spi0_initialize()) {
             printf("SPI0初期化失敗\n");
