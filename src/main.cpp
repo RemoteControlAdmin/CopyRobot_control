@@ -20,7 +20,7 @@
 
 void end_task(int signum){
     if(signum == SIGINT) {
-        std::cout << "\n[INFO] Ctrl+C detected. Exiting..." << std::endl;
+        std::cout << "\n[Info] Ctrl+C detected. Exiting..." << std::endl;
         stop_flag = 1;
     }
 }
@@ -30,9 +30,9 @@ void set_cpu_governor(const std::string& governor) {
     std::string command = "sudo cpufreq-set -g" + governor;
     int ret = system(command.c_str());
     if (ret != 0) {
-        std::cerr << "Error setting CPU governor to " << governor << std::endl;
+        std::cerr << "[Error] setting CPU governor to " << governor << std::endl;
     } else {
-        std::cout << "\n[INFO] CPU governor set to " << governor << std::endl;
+        std::cout << "\n[Info] CPU governor set to " << governor << std::endl;
     }
 }
 
@@ -51,16 +51,20 @@ int main(){
     std::deque<std::pair<std::vector<double>, int64_t>> deque_copy;
     std::mutex queue_mutex_master;
     std::mutex queue_mutex_copy;
+
+    std::deque<std::vector<double>> deque_force;
+    std::mutex queue_mutex_force;
     
     /*
     * インスタンス作成 Instance creation
     */
+    SPIService spi_service{}; // SPI setup
     motorcontrol::MotorControl motor_control{};     // Motor setup
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
-    forceget::ForceActual force_actual{}; // force actual
-    //forceget::ForceIdeal force_ideal{}; // force ideal
+    forceget::ForceActual force_actual{ deque_force, queue_mutex_force}; // force actual
+    forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
     //udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
     DataLogger data_logger{}; // data logger
@@ -100,6 +104,7 @@ int main(){
     */
     std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
     std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
+    std::thread force_thread(&forceget::ForceActual::force_get_thread, &force_actual, std::ref(spi_service)); // force get thread
     /*
     * ============== main roop ==============
     */
@@ -154,8 +159,8 @@ int main(){
         *  force getting
         */
         robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
-        //robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
-        //robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+        robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
+        robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
 
         /*
         * robot control
@@ -165,7 +170,7 @@ int main(){
         if (! result) {
             safety_count++;
             if (safety_count > 15){
-                std::cout << "[Warning] Safety count exceeded]" << std::endl;
+                std::cout << "[Warning] Safety count exceeded" << std::endl;
                 stop_flag = true;
             }
             //robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
@@ -182,11 +187,7 @@ int main(){
         */
         mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
         //motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
-        bool motror_result = motor_control.send_voltage(mat3x1.mortor_voltage[0], mat3x1.mortor_voltage[1], mat3x1.mortor_voltage[2]);
-        if (!motror_result) {
-            std::cout << "[Error] Voltage out of range. Motor control failed." << std::endl;
-            stop_flag = true; // Stop the program if voltage is out of range
-        }
+        motor_control.send_voltage(mat3x1.mortor_voltage[0], mat3x1.mortor_voltage[1], mat3x1.mortor_voltage[2], spi_service);
         robotdata.last_err_data = robotdata.err_data;
 
         /* 
@@ -217,7 +218,8 @@ int main(){
     set_cpu_governor("ondemand");
     udp_thread_master.join(); // UDP receive thread from master
     udp_thread_copy.join(); // UDP receive thread from copy
-    std::cout << "[INFO] Program terminated gracefully." << std::endl;
+    force_thread.join(); // force get thread
+    std::cout << "[Info] Program terminated gracefully." << std::endl;
     std::cout << "[Warning] Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
     return 0;
     

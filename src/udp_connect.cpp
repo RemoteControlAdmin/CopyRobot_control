@@ -13,7 +13,7 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
     */
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (sock < 0) {
-        perror("Socket creation failed");
+        perror("[Error] Socket creation failed");
         exit(EXIT_FAILURE);
     }
 
@@ -22,7 +22,7 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
     tv.tv_usec = 50000;  // 50ミリ秒（必要に応じて調整）
     
     if (setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof(tv)) < 0) {
-        perror("Error setting socket timeout");
+        perror("[Error] setting socket timeout");
         exit(EXIT_FAILURE);
     }
 
@@ -39,7 +39,7 @@ UdpConnect::UdpConnect(std::string address, int port, size_t element_count) {
 // UDP送信関数（double型データを送信）
 void UdpConnect::udp_send(const std::vector<double>& values, int64_t roop_count) {
     if (values.size() * sizeof(double) != buffer_size) {
-        std::cerr << "Error: values.size() does not match buffer_size!" << std::endl;
+        std::cerr << "[Error]: values.size() does not match buffer_size!" << std::endl;
         std::cerr << "Expected size: " << buffer_size / sizeof(double) << ", Actual size: " << values.size() << std::endl;
         return;
     }
@@ -82,7 +82,7 @@ std::pair<std::vector<double>, int64_t> UdpConnect::udp_recv() {
 
     // 受信データのサイズが設定済みのバッファサイズと一致するか確認
     if (received_bytes != total_buffer_size) {
-        std::cerr << "Error: Received data size mismatch!" << std::endl;
+        std::cerr << "[Warning] Received data size mismatch!" << std::endl;
         return {};
     }
     // 受信データをstd::vector<double>に変換

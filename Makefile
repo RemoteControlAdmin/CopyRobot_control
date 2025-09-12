@@ -10,9 +10,10 @@ TARGET   := test
 
 # ソースファイル
 CPPSRCS  := src/forward_kinematics.cpp src/inverce_kinematics.cpp src/motor_control.cpp src/data_logger.cpp \
-            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/force_get.cpp src/csv_edit.cpp src/common.cpp\
-			src/spi_service.cpp \
+            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/csv_edit.cpp src/common.cpp\
+			src/spi_service.cpp  src/force_get.cpp\
 			src/main.cpp
+
 #CPPSRCS  := src/spi_service.cpp \
 			src/check_main.cpp \
 

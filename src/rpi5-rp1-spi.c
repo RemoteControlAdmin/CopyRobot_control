@@ -509,7 +509,7 @@ mcp_result_t read_ADC(rp1_spi_instance_t *spi2, double b_fax, double b_fay, doub
                    + (t1.tv_nsec - t0.tv_nsec) / 1000L;
 
         // 既存の出力体裁を極力維持
-        printf("| time=%ld us\n", dt_us);
+        //printf("| time=%ld us\n", dt_us);
     
     return result;
 }

@@ -1,32 +1,66 @@
 # include "force_get.hpp"
-
+#include <fstream>  // ← 追加
+#include <iomanip>  // ← setprecision で必要
 namespace forceget { 
-    ForceActual::ForceActual(){
-        if (adc2_init(spi2, &ctx,
-                      /*do_zero_calib=*/1,
-                      ZERO_SAMPLES_DEFAULT,
-                      /*cs_bit=*/0,
-                      ADC_MAP_MODE_DEFAULT) != 0) {
-            fprintf(stderr, "adc2_init failed\n");
-        }
-    }
-
+    ForceActual::ForceActual( 
+        std::deque<std::vector<double>>& deque_force, std::mutex& queue_mutex_force):
+        deque_force_(deque_force), queue_mutex_force_(queue_mutex_force)
+        {
+        
     } //コンストラクタ
 
-    std::vector<int> ForceActual::ReadAnalogInputs(){ // 関数（任意の名前）
+    void ForceActual::force_get_thread(SPIService& spi_service){ // 関数（任意の名前）
+        spi_service.init_adc();
+        using clock = std::chrono::steady_clock;
+        const auto T = std::chrono::microseconds(force_freq);  // 1ms周期
 
+        auto next = clock::now();
+        auto last = next;
+
+        std::ofstream csv_file("force_data.csv");
+        csv_file << "time,force0,force1,force2,force3\n";
+
+        while(!stop_flag){
+            std::vector<double> force_values = spi_service.read_adc();
+
+            {
+                std::lock_guard<std::mutex> lock(queue_mutex_force_);
+                if (!deque_force_.empty()){
+                    deque_force_.pop_front();
+                }
+                deque_force_.push_back(force_values);
+            }
+            std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
+            csv_file << std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch()).count() << ","
+                     << force_values[0] << ","
+                     << force_values[1] << ","
+                     << force_values[2] << ","
+                     << force_values[3] << "\n";
+            auto now = clock::now();
+            auto dt = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
+            last = now;
+            next += T;
+            std::this_thread::sleep_until(next);
+        }
+        csv_file.close();
     }
     
     std::vector<double> ForceActual::FEActCal(std::vector<double> copy_data){
-        if (adc2_read_once(spi2, &ctx, &rd) != 0){
-            std::cerr << "adc2_read_once failed" << std::endl;
-            return {};
+        std::vector<double> force_values;
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_force_);
+            if (!deque_force_.empty()){
+                force_values = deque_force_.front();
+                deque_force_.pop_front();
+            }
+            else{
+                force_values = {0.0, 0.0, 0.0, 0.0};
+            }
         }
-        
-        FAx = rd.FAx;
-        FAy = rd.FAy;
-        FBx = rd.FBx;
-        FBy = rd.FBy;
+        FAx = force_values[0];
+        FAy = force_values[1];
+        FBx = force_values[2];
+        FBy = force_values[3];
         //Result Force Robot Frame of Sensor A
         FA_R  = sqrt(pow(FAx,2)+pow(FAy,2));
         FAa_R = (atan2(FAy,FAx));
@@ -72,23 +106,6 @@ namespace forceget {
         return {FEactM,FEactMa};
     }
 
-    //Replace a angle of actual force from the robot frame to the global frame [FEa]=FEa(A_MRDisplacement)
-    /*double ForceActual::FEActSwapCal(){
-        if(FEactM<=FEactMThreshold){A_FEVir=0;}     // Force Env. Actual less than 0, Angle of Force Env. Virtual is 0
-        else {A_FEVir;}
-    
-        FEa[3]= FEactM;								// Switch data storage in array
-        FEactM = FEa[3];						    // Switch data storage in array
-        FEa[4]= A_FEVir;				            // Switch data storage in array (Angle of Force Env. Actual will be Angle of Force Env. Virtual)
-        FEactMa= FEa[4]*(180.0/M_PI);				// Switch data storage in array (Degree to Rad)
-        FEa[0]= FEactM*cos(A_FEVir);		        // Actual Force in X direction on a global coordinate frame
-        FEactx= FEa[0];								// Switch data storage in array
-        FEa[1]= FEactM*sin(A_FEVir);		        // Actual Force in Y direction on a global coordinate frame
-        FEacty= FEa[1];								// Switch data storage in array
-        FEa[2]= FEactM*0.0;							// A moment is defined as zero
-        FEactNull= FEa[2];							// Switch data storage in array
-        return 0;
-    }*/
 
     /*
     * class ForceIdeal
@@ -115,16 +132,6 @@ namespace forceget {
             
         return {FIdeal*cos(A_DIde), FIdeal*sin(A_DIde), DIde, FIdeal, A_DIde, static_cast<double>(MRTouchChk)};
     }
-    //Force compensation by constant [Pdf]=[Pd]+[Po]
-    /*double ForceIdeal::ForceCompensateCal(){
-        Po[0]=(Pod*cos(A_DVir));       //Pox in m.
-        Po[1]=(Pod*sin(A_DVir));       //Poy in m.
-        Po[2]=A_DVir;                  //Ac in rad
 
-        Pdf[0]=Pd[0]+Po[0];            //Pfdx in m.
-        Pdf[1]=Pd[1]+Po[1];            //Pfdx in m.
-        Pdf[2]=Pd[2]+0;                //Afd in rad.   
-        return 0;
-    }*/
     
 }

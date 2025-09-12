@@ -29,7 +29,7 @@ bool SPIService::pico2_motor(float V1,float V2,float V3){
 
   if((-12.0<=V1 && V1<=12.0)&&(-12.0<=V2 && V2<=12.0)&&(-12.0<=V3 && V3<=12.0)){
 
-
+      std::cout << "V1: " << V1 << " V2: " << V2 << " V3: " << V3 << std::endl;
       uint16_t hexa12=Input_value1(V1,V2); 
       uint8_t hexa3=Input_value2(V3);
 
@@ -63,6 +63,6 @@ std::vector<double> SPIService::read_adc(){
 }
 
 SPIService::~SPIService(){
- std::cout<<"Good"<<std::endl;
- send_spi(spi1, 0xF9); // SPI1に終了信号を送信
+  send_spi(spi1, 0xF9); // SPI1に終了信号を送信
+  std::cout << "[INFO] SPIService Destructed" << std::endl;
 }

@@ -15,6 +15,7 @@
 #include "rp1-spi-util.h"
 #include "pi_pico_commands.h"
 #include "rpi5-rp1-spi.h"
+#include "spi_service.hpp"
 
 # include "common.hpp"
 
@@ -31,30 +32,21 @@ namespace motorcontrol {
 
     Eigen::Vector3d convert_wheeltovoltage(Eigen::Vector3d forwheelvelocity);
 
-    bool send_voltage(float V1, float V2, float V3);
+    void send_voltage(float V1, float V2, float V3, SPIService& spi_service);
 
     ~MotorControl();
 
     private:
 
-    bool dummy_spi0_initialize(const char *device = "/dev/spidev0.0",
-                                      uint8_t mode = 0,
-                                      uint8_t bits = 16,
-                                      uint32_t speed = 1000000);
     /*
     *    ========= private =========
     */
 
-    static MotorControl* instance; 
-    
-    rp1_t *rp1;
-    rp1_spi_instance_t *spi0;
-    rp1_spi_instance_t *spi1;
-    rp1_spi_instance_t *spi2;
     /*
     *    ========= private parameter =========
     */
-    Eigen::Vector3d mortor_voltage;
+    Eigen::Vector3d motor_voltage;
+    bool result = false;
     const double wwtovoltgain = 12/32.9754;
 
 
