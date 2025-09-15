@@ -52,12 +52,12 @@ namespace forceget {
     void ForceActual::lowpass_param_set(){
         double omega = 2.0 * M_PI * lowpass_fc / force_freq;
         double alpha = sin(omega) / (2.0 * Q);
-        notch_a[0] = 1.0 + alpha;
-        notch_a[1] = -2.0 * cos(omega);
-        notch_a[2] = 1.0 - alpha;
-        notch_b[0]  = (1.0 - cos(omega)) / 2.0;
-        notch_b[1]  = -1.0 * cos(omega);
-        notch_b[2]  = (1.0 - cos(omega)) / 2.0;
+        iir_a[0] = 1.0 + alpha;
+        iir_a[1] = -2.0 * cos(omega);
+        iir_a[2] = 1.0 - alpha;
+        iir_b[0]  = (1.0 - cos(omega)) / 2.0;
+        iir_b[1]  = 1.0 - cos(omega);
+        iir_b[2]  = (1.0 - cos(omega)) / 2.0;
     }
     std::vector<double> ForceActual::filter_iirlowpass(std::vector<double> force_values){
         for(int i=0;i<4;i++){
