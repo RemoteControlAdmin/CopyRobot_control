@@ -84,6 +84,9 @@ int main(){
     std::vector<double> temp_copy_data(12, 0.0);
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
 
+    // 力制御によるmasterロボットの一次変数
+    std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
+
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
     std::chrono::microseconds micro_last_clock; 
@@ -161,6 +164,14 @@ int main(){
         robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+
+        /*
+        * force control
+        */
+        force_control_data = robot_control.unilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
+            robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); 
+        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
+
 
         /*
         * robot control
