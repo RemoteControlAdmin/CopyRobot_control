@@ -475,9 +475,9 @@ void auto_zero_calib_reg(rp1_spi_instance_t *spi,
     *b_fbx = -SCALE * v2;
     *b_fby = -SCALE * v3;
 
-    printf("[ZERO] V0..3=[%.4f %.4f %.4f %.4f] -> "
-           "B=[fax=%.4f fay=%.4f fbx=%.4f fby=%.4f]\n",
-           v0, v1, v2, v3, *b_fax, *b_fay, *b_fbx, *b_fby);
+    //printf("[ZERO] V0..3=[%.4f %.4f %.4f %.4f] -> "
+    //      "B=[fax=%.4f fay=%.4f fbx=%.4f fby=%.4f]\n",
+    //       v0, v1, v2, v3, *b_fax, *b_fay, *b_fbx, *b_fby);
 }
 
 //ADC読み取り関数（spidevに準拠）

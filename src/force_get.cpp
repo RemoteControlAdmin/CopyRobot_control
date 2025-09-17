@@ -19,8 +19,8 @@ namespace forceget {
         auto next = clock::now();
         auto last = next;
 
-        std::ofstream csv_file("force_data.csv");
-        csv_file << "time,force0,force1,force2,force3\n";
+        //std::ofstream csv_file("force_data.csv");
+        //csv_file << "time,force0,force1,force2,force3\n";
 
         while(!stop_flag){
             std::vector<double> force_values = spi_service.read_adc();
@@ -35,19 +35,19 @@ namespace forceget {
             }
             
             
-            std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
-            csv_file << std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch()).count() << ","
-                     << force_values[0] << ","
-                     << force_values[1] << ","
-                     << force_values[2] << ","
-                     << force_values[3] << "\n";
+            //std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
+            //csv_file << std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch()).count() << ","
+            //         << force_values[0] << ","
+            //         << force_values[1] << ","
+            //         << force_values[2] << ","
+            //         << force_values[3] << "\n";
             auto now = clock::now();
             auto dt = std::chrono::duration_cast<std::chrono::microseconds>(now - last);
             last = now;
             next += T;
             std::this_thread::sleep_until(next);
         }
-        csv_file.close();
+        //csv_file.close();
     }
     void ForceActual::lowpass_param_set(){
         double omega = 2.0 * M_PI * lowpass_fc / force_freq;
