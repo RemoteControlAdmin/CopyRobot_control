@@ -164,7 +164,7 @@ int main(){
         robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
-
+        std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
         /*
         * force control
         */
@@ -172,7 +172,8 @@ int main(){
             robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); 
         robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
 
-
+        std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
+        
         /*
         * robot control
         */
