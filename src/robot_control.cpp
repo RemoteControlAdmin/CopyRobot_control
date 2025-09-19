@@ -10,8 +10,8 @@ namespace robotcontrol{
         Ki = 0;
         Kd = 0.2; // medium 2.5 high 17
 
-        Kp_force = 4; // medium 0.5 high 1.0
-        Ki_force = 0; // medium 0.01 high 0.1
+        Kp_force = 3; // medium 0.5 high 1.0
+        Ki_force = 0.5; // medium 0.01 high 0.1
         Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){

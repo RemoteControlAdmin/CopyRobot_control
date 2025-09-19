@@ -77,7 +77,7 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
 
 
     private: // 以下private関数と変数の宣言
-    double Kspring = 16.000/0.020; // N/m (800 N/m)
+    double Kspring = 320; // N/m (800 N/m)
     double DIde,A_DIde,FIdeal,A_FIdeal;
     double DVir,A_DVir,FEVir,A_FEVir;
     int MRTouchChk,CRTouchChk;
