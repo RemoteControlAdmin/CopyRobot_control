@@ -58,8 +58,7 @@ int main(){
     /*
     * インスタンス作成 Instance creation
     */
-    SPIService spi_service{}; // SPI setup
-    motorcontrol::MotorControl motor_control{};     // Motor setup
+    
     robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
     robotcontrol::RobotControl robot_control{};     // robot control
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
@@ -107,12 +106,18 @@ int main(){
     */
     std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
     std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
-    std::thread force_thread(&forceget::ForceActual::force_get_thread, &force_actual, std::ref(spi_service)); // force get thread
     /*
     * ============== main roop ==============
     */
     int safety_count = 0; // 安全カウント
     std::vector<int> not_get_count = {0,0}; // データが取得できなかった回数
+    std::cout << "================== start ==================" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 1 second
+    
+    SPIService spi_service{}; // SPI setup
+    motorcontrol::MotorControl motor_control{};     // Motor setup
+    std::thread force_thread(&forceget::ForceActual::force_get_thread, &force_actual, std::ref(spi_service)); // force get thread
+    
     while(!stop_flag){
         /*
         * queue取り出し
