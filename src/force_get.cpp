@@ -176,7 +176,7 @@ namespace forceget {
         //else if	(DVir> robot_d&&DVir<robot_d)	{FEVir = Kspring*(0.365-DVir);       CRTouchChk=1;}
         else								{FEVir = Kspring*(robot_d - DVir);}
 
-        return {FEVir*cos(A_DVir), FEVir*sin(A_DVir), DVir, FEVir, A_DVir, static_cast<double>(CRTouchChk)};
+        return {FEVir, A_DVir, DVir,FEVir*cos(A_DVir), FEVir*sin(A_DVir), static_cast<double>(CRTouchChk)};
     }
     //Force Ideal calculate [FId]=[Ks]*[0.365-([PM1]-[PM2])]
     std::vector<double> ForceIdeal::FIdCal(std::vector<double> partner_master_data, std::vector<double> master_data){
@@ -186,7 +186,7 @@ namespace forceget {
         else if	(DIde> 0.340&&DIde<0.365)	{FIdeal = Kspring*(0.365-DIde);        MRTouchChk=1;}
         else								{FIdeal = Kspring*(0.365-DIde); DIde=0.025;}         
             
-        return {FIdeal*cos(A_DIde), FIdeal*sin(A_DIde), DIde, FIdeal, A_DIde, static_cast<double>(MRTouchChk)};
+        return {FIdeal, A_DIde, DIde, FIdeal*cos(A_DIde), FIdeal*sin(A_DIde), static_cast<double>(MRTouchChk)};
     }
 
     
