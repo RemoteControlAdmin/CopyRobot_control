@@ -2,7 +2,7 @@
 
 DataLogger::DataLogger(): csvWriter("output_file/" + get_my_name() + ".csv"),
                         csv_vector(26, 0.0),
-                        udpConnection_monitor("100.124.38.52", 53222, 7)
+                        udpConnection_monitor("100.124.38.52", 52222, 7)
                         {
     initialize_csv();
 }
