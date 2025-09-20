@@ -2,7 +2,7 @@
 
 DataLogger::DataLogger(): csvWriter("output_file/" + get_my_name() + ".csv"),
                         csv_vector(26, 0.0),
-                        udpConnection_monitor("100.124.38.52", 52222, 7)
+                        udpConnection_monitor("100.124.38.52", 53222, 7)
                         {
     initialize_csv();
 }
@@ -25,8 +25,8 @@ void DataLogger::initialize_csv(){
                             "Ww1","Ww2","Ww3",
                             "Vm1","Vm2","Vm3",
                             "FEactM","FEactA",
-                            "FEvirM","FEvirA",
-                            "FIdeaM","FIdeaA"});
+                            "FEvirM","FEvirA","VirDir",
+                            "FIdeaM","FIdeaA","IdeDir"});
 }
 
 void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time){
@@ -45,8 +45,8 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
     csv_vector.insert(csv_vector.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
     csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); // 2
-    csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+2); // 6
-    csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+2); // 6
+    csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
+    csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
             
     csv_data = {{send_clock, receive_clock},csv_vector};
     csvWriter.csv_write_data(csv_data);

@@ -172,9 +172,9 @@ namespace forceget {
     std::vector<double> ForceIdeal::FEVirCal(std::vector<double> partner_master_data, std::vector<double> copy_data){
         DVir   = sqrt(pow(partner_master_data[0] - copy_data[0],2.0)+pow(partner_master_data[1]-copy_data[1],2.0));                       //Displcement Virtual
         A_DVir = atan2((partner_master_data[1]-copy_data[1]),(partner_master_data[0]-copy_data[0]));                                    //Angle of Displcement Virtual
-        if		(DVir>=0.365) 				{FEVir = 0;                          CRTouchChk=0;}
-        else if	(DVir> 0.340&&DVir<0.365)	{FEVir = Kspring*(0.365-DVir);       CRTouchChk=1;}
-        else								{FEVir = Kspring*(0.365-DVir);  DVir=0.025;              }
+        if		(DVir>=robot_d) 				{FEVir = 0;                          CRTouchChk=0;}
+        //else if	(DVir> robot_d&&DVir<robot_d)	{FEVir = Kspring*(0.365-DVir);       CRTouchChk=1;}
+        else								{FEVir = Kspring*(robot_d - DVir);}
 
         return {FEVir*cos(A_DVir), FEVir*sin(A_DVir), DVir, FEVir, A_DVir, static_cast<double>(CRTouchChk)};
     }
