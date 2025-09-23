@@ -1,10 +1,12 @@
 # include "force_get.hpp"
 #include <fstream>  // ← 追加
 #include <iomanip>  // ← setprecision で必要
+
 namespace forceget { 
     ForceActual::ForceActual( 
         std::deque<std::vector<double>>& deque_force, std::mutex& queue_mutex_force):
-        deque_force_(deque_force), queue_mutex_force_(queue_mutex_force)
+        deque_force_(deque_force), queue_mutex_force_(queue_mutex_force),
+        udpConnection_send_forcevalues("192.168.11.29", 42000, 6)
         {
         notch_param_set();
         lowpass_param_set();
@@ -12,6 +14,7 @@ namespace forceget {
 
     
     void ForceActual::force_get_thread(SPIService& spi_service){ // 関数（任意の名前）
+
         spi_service.init_adc();
         using clock = std::chrono::steady_clock;
         const auto T = std::chrono::microseconds(force_freq);  // 1ms周期
@@ -33,7 +36,8 @@ namespace forceget {
                 }
                 deque_force_.push_back(force_values);
             }
-            
+            std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
+            udpConnection_send_forcevalues.udp_send(force_values, std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch()).count());
             
             //std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
             //csv_file << std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch()).count() << ","

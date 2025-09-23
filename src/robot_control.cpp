@@ -89,6 +89,34 @@ namespace robotcontrol{
         return corrected_data;
     }
 
+    std::vector<double> RobotControl::unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
+         std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt){
+        actual_vector_data = Eigen::Vector3d(
+            force_actual_data[0] * std::cos(force_virtual_data[4]),
+            force_actual_data[0] * std::sin(force_virtual_data[4]),
+            0.0
+        );
+
+        ideal_vector_data = Eigen::Vector3d(
+            force_ideal_data[0],
+            force_ideal_data[1],
+            0.0
+        );
+        force_err = ideal_vector_data - actual_vector_data; // Force error
+        std::cout << "Force error: " << force_err.transpose() << std::endl;
+        //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
+        Integral_force		+= force_err;								//Calculate the integral term
+        Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
+        pid_force_data = Kp_force * force_err + Ki_force * Integral_force * (microdt*1e-6) + Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
+
+        force_pos_data = -pid_force_data / 320;
+
+        last_force_err = force_err; // Update last force error for next iteration
+        std::vector<double> corrected_data = RobotControl::corrected_pos(master_data, force_pos_data);
+        //	printf("%+.4f",Vc[i]);
+        return corrected_data;
+    }
+
     
 
    

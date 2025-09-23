@@ -47,14 +47,18 @@ int main(){
     * キュー作成
     * make queue
     */
+    // masterとcopyのデータを格納するキュー
     std::deque<std::pair<std::vector<double>, int64_t>> deque_master;
     std::deque<std::pair<std::vector<double>, int64_t>> deque_copy;
     std::mutex queue_mutex_master;
     std::mutex queue_mutex_copy;
-
+    // 力センサーの値を格納するキュー
     std::deque<std::vector<double>> deque_force;
     std::mutex queue_mutex_force;
-    
+    // 力センサー（UDP）の値を格納するキュー
+    std::deque<std::pair<std::vector<double>, int64_t>> deque_udpforce;
+    std::mutex queue_mutex_udpforce;
+
     /*
     * インスタンス作成 Instance creation
     */
@@ -64,13 +68,14 @@ int main(){
     robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
     forceget::ForceActual force_actual{ deque_force, queue_mutex_force}; // force actual
     forceget::ForceIdeal force_ideal{}; // force ideal
-    udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
+    udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy, deque_udpforce, queue_mutex_udpforce); // UDP communication
     //udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
     DataLogger data_logger{}; // data logger
     /*
     * ローカル変数定義　local variable definition
     */
-    int64_t send_time = 0; // 送信時間 send time
+    int64_t master_send_time = 0; // 送信時間 send time
+    int64_t force_send_time = 0; // 送信時間 send time
     // システムクロック定義
     std::chrono::nanoseconds nano_receive_clock = std::chrono::nanoseconds(0); // 受信時間 receive time 
     //構造体宣言
@@ -110,7 +115,7 @@ int main(){
     * ============== main roop ==============
     */
     int safety_count = 0; // 安全カウント
-    std::vector<int> not_get_count = {0,0}; // データが取得できなかった回数
+    std::vector<int> not_get_count = {0,0,0}; // データが取得できなかった回数
     std::cout << "================== start ==================" << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 1 second
     
@@ -129,7 +134,7 @@ int main(){
             if (!deque_master.empty()){
                 std::pair<std::vector<double>, int64_t> getdata = deque_master.front();
                 robotdata.master_data = getdata.first;
-                send_time = getdata.second;
+                master_send_time = getdata.second;
                 robotdata.last_master_data = robotdata.master_data;
                 deque_master.pop_front();
             }
@@ -155,6 +160,19 @@ int main(){
                 not_get_count[1]++;
             }
         } // unlock用
+
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_udpforce);
+            if (!deque_udpforce.empty()){
+                robotdata.force_udp_data = deque_udpforce.front().first;
+                force_send_time = deque_udpforce.front().second;
+                deque_udpforce.pop_front();
+            }
+            else{
+                robotdata.force_udp_data = {0.0, 0.0, 0.0, 0.0};
+                not_get_count[2]++;
+            }
+        }
         /*
         *  data calculation about robot
         */
@@ -212,8 +230,8 @@ int main(){
         */
         current_clock = std::chrono::high_resolution_clock::now();
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
-        double delay_time = (nano_receive_clock.count() - send_time)/ 1000000.0;
-        data_logger.save_csv(robotdata, mat3x1, send_time, nano_receive_clock.count(),delay_time);
+        double delay_time = (nano_receive_clock.count() - master_send_time)/ 1000000.0;
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*
@@ -237,7 +255,7 @@ int main(){
     udp_thread_copy.join(); // UDP receive thread from copy
     force_thread.join(); // force get thread
     std::cout << "[Info] Program terminated gracefully." << std::endl;
-    std::cout << "[Warning] Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
+    std::cout << "[Warning] Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << ", Force = " << not_get_count[2] << std::endl;
     return 0;
     
 }

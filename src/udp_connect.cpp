@@ -108,9 +108,12 @@ UdpConnect::~UdpConnect() {
 UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64_t>>& deque_master, // address of deque_master
                                 std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy,
                                 std::mutex& queue_mutex_master,
-                                std::mutex& queue_mutex_copy) :
+                                std::mutex& queue_mutex_copy,
+                                std::deque<std::pair<std::vector<double>, int64_t>>& deque_udpforce,
+                                std::mutex& queue_mutex_udpforce) :
                                 deque_master_(deque_master), deque_copy_(deque_copy),
-                                queue_mutex_master_(queue_mutex_master), queue_mutex_copy_(queue_mutex_copy) {}
+                                queue_mutex_master_(queue_mutex_master), queue_mutex_copy_(queue_mutex_copy),
+                                deque_udpforce_(deque_udpforce), queue_mutex_udpforce_(queue_mutex_udpforce) {}
 
 
 void UdpCommunicator::recive_thread_from_master(){
@@ -178,8 +181,25 @@ void UdpCommunicator::recive_thread_from_copy(){
         } // unlock
 }
 
-void UdpCommunicator::send_function(){
-    UdpConnect udpConnection_raspberrypi("192.168.11.29", 4102, 6); // UDP初期化
+void UdpCommunicator::recive_thread_get_forcevalue(){
+    UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 6); // from Copy Robot
+    udpConnection_get_forcevalues.udp_bind();
+
+    while(!stop_flag){
+        std::pair<std::vector<double>, int64_t> receiveddata_udpforce = udpConnection_get_forcevalues.udp_recv();     // from copy robot (own)
+
+        if (receiveddata_udpforce.first.empty()) {
+            continue;  // 空データならスキップ
+        }
+
+        {
+            std::lock_guard<std::mutex> lock(queue_mutex_udpforce_); // lock
+            if (!deque_udpforce_.empty()){
+                deque_udpforce_.pop_front();
+            }
+            deque_udpforce_.push_back(receiveddata_udpforce);
+        } // unlock
+}
 }
 // デストラクタの実装
 UdpCommunicator::~UdpCommunicator() {

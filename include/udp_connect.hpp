@@ -55,13 +55,15 @@ class UdpCommunicator{
         UdpCommunicator(std::deque<std::pair<std::vector<double>, int64_t>>& deque_master, // address of deque_master
             std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy,
             std::mutex& queue_mutex_master,
-            std::mutex& queue_mutex_copy);
+            std::mutex& queue_mutex_copy,
+            std::deque<std::pair<std::vector<double>, int64_t>>& deque_udpforce,
+            std::mutex& queue_mutex_udpforce);
 
         void recive_thread_from_master();
         
         void recive_thread_from_copy();
 
-        void send_function();
+        void recive_thread_get_forcevalue();
         
         ~UdpCommunicator();
 
@@ -70,6 +72,10 @@ class UdpCommunicator{
         std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy_;
         std::mutex& queue_mutex_master_;
         std::mutex& queue_mutex_copy_;
+
+        std::deque<std::pair<std::vector<double>, int64_t>>& deque_udpforce_;
+        std::mutex& queue_mutex_udpforce_;
+
 };
 
 }

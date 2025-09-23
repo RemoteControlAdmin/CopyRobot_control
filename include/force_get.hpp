@@ -15,6 +15,7 @@
 #include "rpi5-rp1-spi.h"
 #include "spi_service.hpp"
 #include "common.hpp"
+#include "udp_connect.hpp"
 
 // 必要なライブラリのインクルード
 
@@ -51,6 +52,10 @@ namespace forceget { // 名前空間 (任意の名前，ソースと合わせる
     std::vector<double> filter_iirlowpass(std::vector<double> force_values);
     void notch_param_set();
     std::vector<double> filter_iirnotch(std::vector<double> force_values);
+
+    //  ===========UDP通信処理===========
+    udp_lib::UdpConnect udpConnection_send_forcevalues;
+
 
     //===========Declaration the force sensor communication===========
     double FAx, FAy, FBx, FBy; // 力センサーの値を格納する変数の宣言
