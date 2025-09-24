@@ -29,7 +29,7 @@ struct RobotData {
     std::vector<double> force_actual_data;
     std::vector<double> force_virtual_data;
     std::vector<double> force_ideal_data;
-    std::vector<double> force_udp_data;
+    double force_udp_data;
     RobotData(); // コンストラクタの宣言
 };
 

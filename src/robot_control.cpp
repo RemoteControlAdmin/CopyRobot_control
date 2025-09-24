@@ -89,20 +89,20 @@ namespace robotcontrol{
         return corrected_data;
     }
 
-    std::vector<double> RobotControl::unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
-         std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt){
+    std::vector<double> RobotControl::bilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
+        double force_udp_data, std::vector<double> master_data, int microdt){
         actual_vector_data = Eigen::Vector3d(
             force_actual_data[0] * std::cos(force_virtual_data[4]),
             force_actual_data[0] * std::sin(force_virtual_data[4]),
             0.0
         );
 
-        ideal_vector_data = Eigen::Vector3d(
-            force_ideal_data[0],
-            force_ideal_data[1],
+        udp_vector_data = Eigen::Vector3d(
+            force_udp_data * std::cos(force_virtual_data[4]),
+            force_udp_data * std::sin(force_virtual_data[4]),
             0.0
         );
-        force_err = ideal_vector_data - actual_vector_data; // Force error
+        force_err = udp_vector_data - actual_vector_data; // Force error
         std::cout << "Force error: " << force_err.transpose() << std::endl;
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term

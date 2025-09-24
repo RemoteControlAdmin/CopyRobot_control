@@ -166,6 +166,35 @@ namespace forceget {
         return {FEactM,FEactMa};
     }
 
+    double ForceActual::FUDPCal(std::vector<double> force_values){
+        // force_values = [FAx, FAy, FBx, FBy]
+        const double ax_local = force_values[0];
+        const double ay_local = force_values[1];
+        const double bx_local = force_values[2];
+        const double by_local = force_values[3];
+
+        // Sensor A ロボット→グローバル
+        const double a_mag = std::sqrt(ax_local * ax_local + ay_local * ay_local);
+        const double a_ang = std::atan2(ay_local, ax_local);
+        const double ax_r = a_mag * std::cos(a_ang);
+        const double ay_r = a_mag * std::sin(a_ang);
+        const double ax_g = ax_r * std::cos(AngleA_off) + ay_r * std::cos(AngleA_off + M_PI / 2.0);
+        const double ay_g = ax_r * std::sin(AngleA_off) + ay_r * std::sin(AngleA_off + M_PI / 2.0);
+
+        // Sensor B ロボット→グローバル
+        const double b_mag = std::sqrt(bx_local * bx_local + by_local * by_local);
+        const double b_ang = std::atan2(by_local, bx_local);
+        const double bx_r = b_mag * std::cos(b_ang);
+        const double by_r = b_mag * std::sin(b_ang);
+        const double bx_g = bx_r * std::cos(AngleB_off) + by_r * std::cos(AngleB_off + M_PI / 2.0);
+        const double by_g = bx_r * std::sin(AngleB_off) + by_r * std::sin(AngleB_off + M_PI / 2.0);
+
+        // グローバル合力のマグニチュード
+        const double fx_total = ax_g + bx_g;
+        const double fy_total = ay_g + by_g;
+        return std::sqrt(fx_total * fx_total + fy_total * fy_total);
+    }
+
 
     /*
     * class ForceIdeal

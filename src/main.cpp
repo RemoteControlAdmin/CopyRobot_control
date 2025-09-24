@@ -87,7 +87,8 @@ int main(){
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::vector<double> temp_copy_data(12, 0.0);
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
-
+    // 力センサー（UDP）の値を保持するための変数
+    std::vector<double> force_udp_values(4, 0.0);
     // 力制御によるmasterロボットの一次変数
     std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
 
@@ -164,12 +165,12 @@ int main(){
         {
             std::lock_guard<std::mutex> lock(queue_mutex_udpforce);
             if (!deque_udpforce.empty()){
-                robotdata.force_udp_data = deque_udpforce.front().first;
+                force_udp_values = deque_udpforce.front().first;
                 force_send_time = deque_udpforce.front().second;
                 deque_udpforce.pop_front();
             }
             else{
-                robotdata.force_udp_data = {0.0, 0.0, 0.0, 0.0};
+                force_udp_values = {0.0, 0.0, 0.0, 0.0};
                 not_get_count[2]++;
             }
         }
@@ -187,13 +188,15 @@ int main(){
         robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
+        robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values);
+        
         std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
         /*
         * force control
         */
-        force_control_data = robot_control.unilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
-            robotdata.force_ideal_data, robotdata.master_data, micro_dt.count()); 
-        //robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
+        force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
+            robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
+        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
 
         std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
         

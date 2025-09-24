@@ -22,7 +22,8 @@ namespace robotcontrol {
     std::vector<double> unilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
          std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt);
 
-
+    std::vector<double> bilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
+         double force_udp_data, std::vector<double> master_data, int microdt);
     private:
     
     std::vector<double> corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data);
@@ -35,6 +36,7 @@ namespace robotcontrol {
 
     Eigen::Vector3d actual_vector_data;
     Eigen::Vector3d ideal_vector_data;
+    Eigen::Vector3d udp_vector_data;
     Eigen::Vector3d force_err;
     Eigen::Vector3d last_force_err;
     Eigen::Vector3d pid_force_data;
