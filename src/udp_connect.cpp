@@ -182,7 +182,7 @@ void UdpCommunicator::recive_thread_from_copy(){
 }
 
 void UdpCommunicator::recive_thread_get_forcevalue(){
-    UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 6); // from Copy Robot
+    UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 4); // from Copy Robot
     udpConnection_get_forcevalues.udp_bind();
 
     while(!stop_flag){

@@ -6,7 +6,7 @@ namespace forceget {
     ForceActual::ForceActual( 
         std::deque<std::vector<double>>& deque_force, std::mutex& queue_mutex_force):
         deque_force_(deque_force), queue_mutex_force_(queue_mutex_force),
-        udpConnection_send_forcevalues("192.168.11.29", 42000, 6)
+        udpConnection_send_forcevalues("192.168.11.29", 42000, 4)
         {
         notch_param_set();
         lowpass_param_set();
