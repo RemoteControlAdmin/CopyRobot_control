@@ -10,7 +10,7 @@ namespace robotcontrol{
         Ki = 5;
         Kd = 1; // medium 2.5 high 17
 
-        Kp_force = 0.5; // medium 0.5 high 1.0
+        Kp_force = 0.8; // medium 0.5 high 1.0
         Ki_force = 0; // medium 0.01 high 0.1
         Kd_force = 0.01; // medium 0.01 high 0
     }
@@ -56,7 +56,7 @@ namespace robotcontrol{
     std::vector<double> RobotControl::corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data){
         std::vector<double> corrected_data(3);
         for (int i = 0; i < 3; i++) {
-            corrected_data[i] = master_data[i] - force_pos_data[i];
+            corrected_data[i] =  force_pos_data[i]; //master_data[i] -
         }
         return corrected_data;
     }
@@ -109,7 +109,7 @@ namespace robotcontrol{
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
         pid_force_data = Kp_force * force_err + Ki_force * Integral_force * (microdt*1e-6) + Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
 
-        force_pos_data = -pid_force_data / 320;
+        force_pos_data = pid_force_data / 320;
 
         last_force_err = force_err; // Update last force error for next iteration
         std::vector<double> corrected_data = RobotControl::corrected_pos(master_data, force_pos_data);

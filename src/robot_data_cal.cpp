@@ -28,7 +28,7 @@ namespace robotcontrol{
     std::array<double,3> RobotDataCal::err_robotposition_cal(std::vector<double> master_data, std::vector<double> copy_data){
         int i;
         for(i=0;i<2;i++){
-            err_data[i]=master_data[i]-copy_data[i];
+            err_data[i]=master_data[i];//-copy_data[i];
         }
         err_data[2] = atan2(sin(master_data[2] - copy_data[2]),
                                       cos(master_data[2] - copy_data[2]));
