@@ -112,6 +112,7 @@ int main(){
     */
     std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
     std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
+    std::thread recive_thread_get_forcevalue(&udp_lib::UdpCommunicator::recive_thread_get_forcevalue, udp_communicator);
     /*
     * ============== main roop ==============
     */

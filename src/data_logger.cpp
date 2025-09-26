@@ -88,6 +88,8 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
               << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[4]))
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
               << std::endl;
+    std::cout << std::left << std::setw(20) << ("FUDPM = " + std::to_string(robotdata.force_udp_data))
+              << std::endl;
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
               << std::endl;
     std::cout << std::left << std::setw(20) << ("Delay = " + std::to_string(delay_time)) 

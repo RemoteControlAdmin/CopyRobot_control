@@ -10,9 +10,9 @@ namespace robotcontrol{
         Ki = 5;
         Kd = 1; // medium 2.5 high 17
 
-        Kp_force = 0.8; // medium 0.5 high 1.0
+        Kp_force = 1; // medium 0.5 high 1.0
         Ki_force = 0; // medium 0.01 high 0.1
-        Kd_force = 0.01; // medium 0.01 high 0
+        Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
         Kp = kp;
@@ -56,7 +56,7 @@ namespace robotcontrol{
     std::vector<double> RobotControl::corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data){
         std::vector<double> corrected_data(3);
         for (int i = 0; i < 3; i++) {
-            corrected_data[i] =  force_pos_data[i]; //master_data[i] -
+            corrected_data[i] = master_data[i] - force_pos_data[i]; //
         }
         return corrected_data;
     }
