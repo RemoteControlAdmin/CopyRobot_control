@@ -181,7 +181,7 @@ int main(){
         temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
         //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
-        //robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
+        robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
         
         /*
         *  force getting
@@ -258,6 +258,7 @@ int main(){
     udp_thread_master.join(); // UDP receive thread from master
     udp_thread_copy.join(); // UDP receive thread from copy
     force_thread.join(); // force get thread
+    recive_thread_get_forcevalue.join();
     std::cout << "[Info] Program terminated gracefully." << std::endl;
     std::cout << "[Warning] Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << ", Force = " << not_get_count[2] << std::endl;
     return 0;

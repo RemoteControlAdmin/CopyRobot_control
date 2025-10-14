@@ -2,7 +2,7 @@
 
 DataLogger::DataLogger(): csvWriter("output_file/" + get_my_name() + ".csv"),
                         csv_vector(26, 0.0),
-                        udpConnection_monitor("100.124.38.52", 52222, 7)
+                        udpConnection_monitor("100.124.38.52", 53222, 7)
                         {
     initialize_csv();
 }
@@ -80,12 +80,12 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
     std::cout << std::left << std::setw(20) << ("FEactM = " + std::to_string(robotdata.force_actual_data[0])) 
               << std::left << std::setw(20) << ("FEactA = " + std::to_string(robotdata.force_actual_data[1]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("FVirM = " + std::to_string(robotdata.force_virtual_data[3])) 
-              << std::left << std::setw(20) << ("FVirA = " + std::to_string(robotdata.force_virtual_data[4]))
+    std::cout << std::left << std::setw(20) << ("FVirM = " + std::to_string(robotdata.force_virtual_data[0])) 
+              << std::left << std::setw(20) << ("FVirA = " + std::to_string(robotdata.force_virtual_data[1]))
               << std::left << std::setw(20) << ("VirDir = " + std::to_string(robotdata.force_virtual_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[3]))
-              << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[4]))
+    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[0]))
+              << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[1]))
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
               << std::endl;
     std::cout << std::left << std::setw(20) << ("FUDPM = " + std::to_string(robotdata.force_udp_data))

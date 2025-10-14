@@ -6,12 +6,12 @@ namespace robotcontrol{
     RobotControl::RobotControl(){
         Integral = std::vector<double> {0,0,0};
         Derivative = std::vector<double> {0,0,0};
-        Kp = 35; // medium 6.5 high 25
-        Ki = 5;
-        Kd = 1; // medium 2.5 high 17
+        Kp = 35; // medium 35
+        Ki = 35; // 5
+        Kd = 1; //
 
         Kp_force = 1; // medium 0.5 high 1.0
-        Ki_force = 0; // medium 0.01 high 0.1
+        Ki_force = 1; // medium 0.01 high 0.1
         Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
@@ -91,15 +91,20 @@ namespace robotcontrol{
 
     std::vector<double> RobotControl::bilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
         double force_udp_data, std::vector<double> master_data, int microdt){
+        if(force_virtual_data[2] >= 0.38){
+            return master_data;
+        }
+        double z = (0.38 - force_virtual_data[2])/0.001;
+        double sigmoid = 1/(1 + std::exp(-z));
         actual_vector_data = Eigen::Vector3d(
-            force_actual_data[0] * std::cos(force_virtual_data[4]),
-            force_actual_data[0] * std::sin(force_virtual_data[4]),
+            force_actual_data[0] * std::cos(force_virtual_data[1]),
+            force_actual_data[0] * std::sin(force_virtual_data[1]),
             0.0
         );
 
         udp_vector_data = Eigen::Vector3d(
-            force_udp_data * std::cos(force_virtual_data[4]),
-            force_udp_data * std::sin(force_virtual_data[4]),
+            force_udp_data * std::cos(force_virtual_data[1]),
+            force_udp_data * std::sin(force_virtual_data[1]),
             0.0
         );
         force_err = udp_vector_data - actual_vector_data; // Force error
@@ -107,9 +112,9 @@ namespace robotcontrol{
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
-        pid_force_data = Kp_force * force_err + Ki_force * Integral_force * (microdt*1e-6) + Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
+        pid_force_data = sigmoid * Kp_force * force_err + sigmoid * Ki_force * Integral_force * (microdt*1e-6) + sigmoid * Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
 
-        force_pos_data = pid_force_data / 320;
+        force_pos_data = -pid_force_data / 320;
 
         last_force_err = force_err; // Update last force error for next iteration
         std::vector<double> corrected_data = RobotControl::corrected_pos(master_data, force_pos_data);

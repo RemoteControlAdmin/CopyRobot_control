@@ -6,7 +6,7 @@ namespace forceget {
     ForceActual::ForceActual( 
         std::deque<std::vector<double>>& deque_force, std::mutex& queue_mutex_force):
         deque_force_(deque_force), queue_mutex_force_(queue_mutex_force),
-        udpConnection_send_forcevalues("192.168.11.21", 42000, 4)
+        udpConnection_send_forcevalues("192.168.11.11", 42000, 4)
         {
         notch_param_set();
         lowpass_param_set();
@@ -149,17 +149,17 @@ namespace forceget {
         F_G =sqrt(pow(FAx_G+FBx_G,2)+pow(FAy_G+FBy_G,2));
         Fa_G=(atan2(FAy_G+FBy_G,FAx_G+FBx_G));
         //if(Fa_G<0) Fa_G=Fa_G+(2*M_PI);
-        if(F_G<FEactMThreshold){                                // Force actual threshold determining
+        /*if(F_G<FEactMThreshold){                                // Force actual threshold determining
         FEactM  =0;
         FEactMa =0;
         FEactx =0;
         FEacty =0;
         FEactNull =0;}
-        else{
+        else{*/
         FEactM  =F_G;
         FEactMa =Fa_G;
         FEactx =F_G*cos(Fa_G);
-        FEacty =F_G*sin(Fa_G);}
+        FEacty =F_G*sin(Fa_G);//}
         FEactNull =0;
         // convert global frame
         FEactMa = FEactMa + copy_data[2]; // copy_data[2] is the angle offset for the global frame
@@ -192,6 +192,9 @@ namespace forceget {
         // グローバル合力のマグニチュード
         const double fx_total = ax_g + bx_g;
         const double fy_total = ay_g + by_g;
+        //if (std::sqrt(fx_total * fx_total + fy_total * fy_total) < 1.0){
+        //    return 0;
+        //}
         return std::sqrt(fx_total * fx_total + fy_total * fy_total);
     }
 
@@ -208,7 +211,7 @@ namespace forceget {
         if		(DVir>=robot_d) 				{FEVir = 0;                          CRTouchChk=0;}
         //else if	(DVir> robot_d&&DVir<robot_d)	{FEVir = Kspring*(0.365-DVir);       CRTouchChk=1;}
         else								{FEVir = Kspring*(robot_d - DVir);}
-
+        
         return {FEVir, A_DVir, DVir,FEVir*cos(A_DVir), FEVir*sin(A_DVir), static_cast<double>(CRTouchChk)};
     }
     //Force Ideal calculate [FId]=[Ks]*[0.365-([PM1]-[PM2])]
