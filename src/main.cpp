@@ -119,7 +119,7 @@ int main(){
     int safety_count = 0; // 安全カウント
     std::vector<int> not_get_count = {0,0,0}; // データが取得できなかった回数
     std::cout << "================== start ==================" << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(5000)); // 5秒待機 wait for 5 seconds
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 2 seconds
 
     /*
     * 受信スレッドの開始 start receive thread
@@ -127,7 +127,6 @@ int main(){
     std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
     std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
     std::thread recive_thread_get_forcevalue(&udp_lib::UdpCommunicator::recive_thread_get_forcevalue, udp_communicator);
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 2 seconds
     /*
     * SPI, Motor setup
     */
