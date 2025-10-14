@@ -20,7 +20,7 @@ std::string  DataLogger::get_my_name(){
 }
 
 void DataLogger::initialize_csv(){
-    csvWriter.csv_write_headers({"TT","RT","TD","Perrx","Perry","Aerr", // send time , receive time, delay time, position error x, position error y, angle error
+    csvWriter.csv_write_headers({"TT","RT","TD","FTD","Perrx","Perry","Aerr", // send time , receive time, delay time, position error x, position error y, angle error
                             "Vcx","Vcy","Wc",
                             "Ww1","Ww2","Ww3",
                             "Vm1","Vm2","Vm3",
@@ -29,10 +29,11 @@ void DataLogger::initialize_csv(){
                             "FIdeaM","FIdeaA","IdeDir"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
+    csv_vector.push_back(force_delay_time);
     //csv_vector.insert(csv_vector.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
     for (const auto& val : robotdata.err_data) {
         csv_vector.push_back(val * 1000);
@@ -54,7 +55,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
 
 
 // データを表示する関数
-void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time){
+void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time, double force_delay_time){
     std::cout << "\033[2J\033[1;1H"; // Clear the console
     std::cout << "================== Data  ==================" << std::endl;
     std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
@@ -90,9 +91,11 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
               << std::endl;
     std::cout << std::left << std::setw(20) << ("FUDPM = " + std::to_string(robotdata.force_udp_data))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
+    std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt))
               << std::endl;
     std::cout << std::left << std::setw(20) << ("Delay = " + std::to_string(delay_time)) 
+              << std::endl;
+    std::cout << std::left << std::setw(20) << ("Force Delay = " + std::to_string(force_delay_time))
               << std::endl;
     std::cout << "==============================================" << std::endl;
 }

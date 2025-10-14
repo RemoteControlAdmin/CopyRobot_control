@@ -36,6 +36,12 @@ void set_cpu_governor(const std::string& governor) {
     }
 }
 
+double cal_delay_time(int64_t send_time){
+    std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
+    std::chrono::nanoseconds nano_current_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
+    double delay_time = (nano_current_clock.count() - send_time)/ 1000000.0;
+    return delay_time;
+}
 
 int main(){
     set_cpu_governor("performance");
@@ -108,19 +114,23 @@ int main(){
     first_clock = micro_last_clock;
 
     /*
-    * 受信スレッドの開始
-    */
-    std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
-    std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
-    std::thread recive_thread_get_forcevalue(&udp_lib::UdpCommunicator::recive_thread_get_forcevalue, udp_communicator);
-    /*
     * ============== main roop ==============
     */
     int safety_count = 0; // 安全カウント
     std::vector<int> not_get_count = {0,0,0}; // データが取得できなかった回数
     std::cout << "================== start ==================" << std::endl;
-    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 1 second
-    
+    std::this_thread::sleep_for(std::chrono::milliseconds(5000)); // 5秒待機 wait for 5 seconds
+
+    /*
+    * 受信スレッドの開始 start receive thread
+    */
+    std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
+    std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
+    std::thread recive_thread_get_forcevalue(&udp_lib::UdpCommunicator::recive_thread_get_forcevalue, udp_communicator);
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 2 seconds
+    /*
+    * SPI, Motor setup
+    */
     SPIService spi_service{}; // SPI setup
     motorcontrol::MotorControl motor_control{};     // Motor setup
     std::thread force_thread(&forceget::ForceActual::force_get_thread, &force_actual, std::ref(spi_service)); // force get thread
@@ -178,6 +188,7 @@ int main(){
         /*
         *  data calculation about robot
         */
+        double delay_time = cal_delay_time(master_send_time);
         temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
         //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
@@ -195,6 +206,7 @@ int main(){
         /*
         * force control
         */
+        double force_delay_time = cal_delay_time(force_send_time);
         force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
             robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
         robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
@@ -232,11 +244,8 @@ int main(){
         /* 
         * debug用保存および表示
         */
-        current_clock = std::chrono::high_resolution_clock::now();
-        nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
-        double delay_time = (nano_receive_clock.count() - master_send_time)/ 1000000.0;
-        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time);
-        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time);
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time);
+        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*
         *  adjusting the cycle
