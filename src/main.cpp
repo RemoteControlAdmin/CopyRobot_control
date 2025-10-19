@@ -243,6 +243,8 @@ int main(){
         /* 
         * debug用保存および表示
         */
+        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
+        nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
         data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());

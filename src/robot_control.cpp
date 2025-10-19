@@ -10,8 +10,8 @@ namespace robotcontrol{
         Ki = 35; // 5
         Kd = 1; //
 
-        Kp_force = 1; // medium 0.5 high 1.0
-        Ki_force = 1; // medium 0.01 high 0.1
+        Kp_force = 0.003125; // medium 0.5 high 1.0
+        Ki_force = 0.003125; // medium 0.01 high 0.1
         Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
@@ -112,9 +112,9 @@ namespace robotcontrol{
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
-        pid_force_data = sigmoid * Kp_force * force_err + sigmoid * Ki_force * Integral_force * (microdt*1e-6) + sigmoid * Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
+        pid_force_data = Kp_force * force_err + Ki_force * Integral_force * (microdt*1e-6) + Kd_force * Derivative_force / (microdt*1e-6);	//Calculate the output term
 
-        force_pos_data = -pid_force_data / 320;
+        force_pos_data = -pid_force_data * sigmoid;
 
         last_force_err = force_err; // Update last force error for next iteration
         std::vector<double> corrected_data = RobotControl::corrected_pos(master_data, force_pos_data);
