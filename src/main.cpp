@@ -194,10 +194,10 @@ int main(){
         */
         double delay_time = cal_delay_time(master_send_time);
         int k = int(delay_time/10);
-        for(int i = 0; i < 3; i++){
+        /*for(int i = 0; i < 3; i++){
             predict_master_data[i] = rls[i](robotdata.master_data[i], k);
             robotdata.master_data[i] = predict_master_data[i].value_or(robotdata.master_data[i]);
-        }
+        }*/
         if (cycle_count <= 500){
             motor_control.send_voltage(0, 0, 0, spi_service);
             const auto dt = cycle_timer.tick(); 
@@ -223,7 +223,7 @@ int main(){
         double force_delay_time = cal_delay_time(force_send_time);
         force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
             robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
-        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
+        //robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
 
         std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
         
@@ -261,7 +261,7 @@ int main(){
         
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
-        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, predict_master_data);
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, predict_master_data, force_udp_values[0]);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*

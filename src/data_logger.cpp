@@ -26,10 +26,12 @@ void DataLogger::initialize_csv(){
                             "Vm1","Vm2","Vm3",
                             "FEactM","FEactA",
                             "FEvirM","FEvirA","VirDir",
-                            "FIdeaM","FIdeaA","IdeDir"});
+                            "FIdeaM","FIdeaA","IdeDir",
+                            "PredMx","PredMy","PredMt","Preforce"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<std::optional<double>> predict_master_data){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock,
+    double delay_time, double force_delay_time, std::vector<std::optional<double>> predict_master_data, double force_udp_value){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
