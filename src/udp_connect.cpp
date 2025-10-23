@@ -184,14 +184,14 @@ void UdpCommunicator::recive_thread_from_copy(){
 void UdpCommunicator::recive_thread_get_forcevalue(){
     UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 4); // from Copy Robot
     udpConnection_get_forcevalues.udp_bind();
-
+    rlsarpmin::RLSARPMin rls_force(90, 10, 0.99999, 1e3, 1e-9,3);
     while(!stop_flag){
         std::pair<std::vector<double>, int64_t> receiveddata_udpforce = udpConnection_get_forcevalues.udp_recv();     // from copy robot (own)
-
         if (receiveddata_udpforce.first.empty()) {
             continue;  // 空データならスキップ
         }
-
+        double delay_time = cal_delay_time(receiveddata_udpforce.second);
+        receiveddata_udpforce.first[0] = rls_force(receiveddata_udpforce.first[0],delay_time).value_or(receiveddata_udpforce.first[0]);
         {
             std::lock_guard<std::mutex> lock(queue_mutex_udpforce_); // lock
             if (!deque_udpforce_.empty()){
@@ -199,8 +199,16 @@ void UdpCommunicator::recive_thread_get_forcevalue(){
             }
             deque_udpforce_.push_back(receiveddata_udpforce);
         } // unlock
+    }
 }
+
+double UdpCommunicator::cal_delay_time(int64_t send_time){
+    std::chrono::high_resolution_clock::time_point current_clock = std::chrono::high_resolution_clock::now();
+    std::chrono::nanoseconds nano_current_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());
+    double delay_time = (nano_current_clock.count() - send_time)/ 1000000.0;
+    return delay_time;
 }
+
 // デストラクタの実装
 UdpCommunicator::~UdpCommunicator() {
     // 必要なクリーンアップ処理をここに追加

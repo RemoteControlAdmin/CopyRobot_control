@@ -19,6 +19,8 @@
 
 #include <common.hpp>
 
+#include "rlsarpmin.hpp"
+
 namespace udp_lib{
 
 class UdpConnect{
@@ -68,6 +70,11 @@ class UdpCommunicator{
         ~UdpCommunicator();
 
     private:
+
+        double cal_delay_time(int64_t send_time);
+        
+        std::chrono::high_resolution_clock::time_point current_clock; 
+
         std::deque<std::pair<std::vector<double>, int64_t>>& deque_master_;
         std::deque<std::pair<std::vector<double>, int64_t>>& deque_copy_;
         std::mutex& queue_mutex_master_;

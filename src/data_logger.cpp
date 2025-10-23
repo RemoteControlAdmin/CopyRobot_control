@@ -29,7 +29,7 @@ void DataLogger::initialize_csv(){
                             "FIdeaM","FIdeaA","IdeDir"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<std::optional<double>> predict_master_data){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
@@ -48,7 +48,9 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); // 2
     csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
     csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
-            
+    csv_vector.push_back(predict_master_data[0].value_or(0.0)); 
+    csv_vector.push_back(predict_master_data[1].value_or(0.0));
+    csv_vector.push_back(predict_master_data[2].value_or(0.0));
     csv_data = {{send_clock, receive_clock},csv_vector};
     csvWriter.csv_write_data(csv_data);
 }
