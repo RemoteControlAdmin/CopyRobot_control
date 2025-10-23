@@ -53,6 +53,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.push_back(predict_master_data[0].value_or(0.0)); 
     csv_vector.push_back(predict_master_data[1].value_or(0.0));
     csv_vector.push_back(predict_master_data[2].value_or(0.0));
+    csv_vector.push_back(force_udp_value);
     csv_data = {{send_clock, receive_clock},csv_vector};
     csvWriter.csv_write_data(csv_data);
 }

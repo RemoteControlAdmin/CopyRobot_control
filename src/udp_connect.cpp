@@ -184,14 +184,22 @@ void UdpCommunicator::recive_thread_from_copy(){
 void UdpCommunicator::recive_thread_get_forcevalue(){
     UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 4); // from Copy Robot
     udpConnection_get_forcevalues.udp_bind();
-    rlsarpmin::RLSARPMin rls_force(90, 10, 0.99999, 1e3, 1e-9,3);
+        std::array<rlsarpmin::RLSARPMin, 4> rls = {
+        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,3),
+        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,4),
+        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,5),
+        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,6)
+    };
     while(!stop_flag){
         std::pair<std::vector<double>, int64_t> receiveddata_udpforce = udpConnection_get_forcevalues.udp_recv();     // from copy robot (own)
         if (receiveddata_udpforce.first.empty()) {
             continue;  // 空データならスキップ
         }
         double delay_time = cal_delay_time(receiveddata_udpforce.second);
-        receiveddata_udpforce.first[0] = rls_force(receiveddata_udpforce.first[0],delay_time).value_or(receiveddata_udpforce.first[0]);
+        int k = int(delay_time/1)+10;
+        for(int i = 0; i < 4; i++){
+            receiveddata_udpforce.first[i] = rls[i](receiveddata_udpforce.first[i],k).value_or(receiveddata_udpforce.first[i]);
+        }
         {
             std::lock_guard<std::mutex> lock(queue_mutex_udpforce_); // lock
             if (!deque_udpforce_.empty()){
