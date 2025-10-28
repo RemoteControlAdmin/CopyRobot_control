@@ -9,16 +9,16 @@ Csvedit::Csvedit(const std::string &filename) : filename(filename) {
     // 既にファイルが存在する場合は削除
     if (std::ifstream(filename)) {
         if (std::remove(filename.c_str()) != 0) {
-            std::cerr << "既存ファイルの削除に失敗しました: " << filename << std::endl;
+            std::cerr << "Failed to delete the existing file.: " << filename << std::endl;
         } else {
-            std::cout << "既存ファイルを削除しました: " << filename << std::endl;
+            std::cout << "Deleted the existing file.: " << filename << std::endl;
         }
     }
 
     // 新しくファイルを開く（上書きモード）
     file.open(filename, std::ios::app);
     if (!file.is_open()) {
-        std::cerr << "ファイルを開けませんでした: " << filename << std::endl;
+        std::cerr << "Failed to open the file.: " << filename << std::endl;
     }
 }
 
@@ -42,7 +42,7 @@ void Csvedit::csv_write_headers(const std::vector<std::string> &headers) {
 void Csvedit::csv_write_data(const std::pair<std::vector<int64_t>,std::vector<double>>   &data) {
 
     if (!file.is_open()) {
-        std::cerr << "ファイルを開けませんでした: " << filename << std::endl;
+        std::cerr << "Failed to open the file.: " << filename << std::endl;
         return;
     }
 

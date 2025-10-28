@@ -6,6 +6,7 @@
 # include <iterator>
 # include <iostream>
 # include <cstdlib>
+# include <unordered_map>
 # include "common.hpp"
 # include "spi_service.hpp"
 # include "motor_control.hpp"
@@ -44,7 +45,55 @@ double cal_delay_time(int64_t send_time){
     return delay_time;
 }
 
-int main(){
+std::pair<std::string, int> parse_command_line(int argc, char* argv[]){
+    if (argc < 4){
+        std::cerr << "[Error] Not enough arguments" << std::endl;
+        std::cerr << "[Info] 1:local or tailscale \n"
+                  << "       2:Target CopyRobot name (e.g., cra1, crb1, crc1, cra2, crb2, crc2, cra3, crb3) \n"
+                  << "       3:Monitor port number (e.g., 52222, 53222)"
+        << std::endl;
+        exit(1);
+    }
+    auto select_mode = argv[1];
+    auto target_copyrobot_name = argv[2];
+    std::string head_ip;
+    // Set target CopyRobot IP address
+    if (std::string(select_mode) == std::string("local")){
+        head_ip = "192.168.11.";
+    }
+    else if (std::string(select_mode) == std::string("tailscale")){
+        head_ip = "100.77.38.";
+    }
+    else{
+        std::cerr << "[Error] Invalid mode" << std::endl;
+        exit(1);
+    }
+    static const std::unordered_map<std::string, std::string> ip_suffixes = {
+        {"cra1", "11"}, {"crb1", "21"}, {"crc1", "31"},
+        {"cra2", "12"}, {"crb2", "22"}, {"crc2", "32"},
+        {"cra3", "13"}, {"crb3", "23"}
+    };
+    auto it = ip_suffixes.find(target_copyrobot_name);
+    if (it == ip_suffixes.end()) {
+        std::cerr << "[Error] Invalid CopyRobot name" << std::endl;
+        std::exit(1);
+    }
+    std::string target_copyrobot_ip = head_ip + it->second;
+
+    // Get monitor port
+    if (std::stoi(argv[3]) >= 56000 and std::stoi(argv[3]) <= 50000){
+        std::cerr << "[Error] Invalid monitor port" << std::endl;
+        exit(1);
+    }
+    auto monitor_port = std::stoi(argv[3]);
+    std::cout << "[Info] Target CopyRobot IP: " << target_copyrobot_ip << std::endl;
+    std::cout << "[Info] Monitor port: " << monitor_port << std::endl;
+    return {target_copyrobot_ip, monitor_port};
+}
+
+int main(int argc, char* argv[]){
+    auto [target_copyrobot_ip, monitor_port] = parse_command_line(argc, argv);
+
     set_cpu_governor("performance");
     std::cout << "================== runnning ==================" << std::endl;
     // 強制終了処理　end proccess
@@ -77,7 +126,7 @@ int main(){
     forceget::ForceIdeal force_ideal{}; // force ideal
     udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy, deque_udpforce, queue_mutex_udpforce); // UDP communication
     //udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
-    DataLogger data_logger{}; // data logger
+    DataLogger data_logger{monitor_port}; // data logger
     /*
     * ローカル変数定義　local variable definition
     */
@@ -111,7 +160,7 @@ int main(){
     cycle_timer::CycleTimer cycle_timer{T};
     int safety_count = 0; // 安全カウント
     std::vector<int> not_get_count = {0,0,0}; // データが取得できなかった回数
-    std::cout << "================== start ==================" << std::endl;
+    std::cout << "==================  start   ==================" << std::endl;
     std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 2 seconds
 
     /*
@@ -192,7 +241,7 @@ int main(){
             const auto dt = cycle_timer.tick(); 
             micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
             std::cout << "\033[2J\033[1;1H"; 
-            std::cout << "[Info] RLS initializing... (" << cycle_count << "/500)" << std::endl;
+            std::cout << "[Info] Waiting... (" << cycle_count << "/500)" << std::endl;
             not_get_count = {0,0,0};
             continue;
         }
@@ -204,8 +253,7 @@ int main(){
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
         robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values);
-        
-        std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
+    
         /*
         * force control
         */
@@ -213,8 +261,6 @@ int main(){
         force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
             robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
         robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
-
-        std::cout << robotdata.err_data[0] << ", " << robotdata.err_data[1] << ", " << robotdata.err_data[2] << std::endl;
         
         /*
         * robot control
@@ -227,7 +273,6 @@ int main(){
                 std::cout << "[Warning] Safety count exceeded" << std::endl;
                 stop_flag = true;
             }
-            //robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
         }
         /*
         * inverce kinematics
@@ -246,6 +291,8 @@ int main(){
 
         /* 
         * debug用保存および表示
+        * 実験データ取得時はshow_dataはコメントアウト推奨
+        * When acquiring experimental data, it is recommended to comment out show_data
         */
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
@@ -261,6 +308,9 @@ int main(){
     }
     // 終了前の後始末
     set_cpu_governor("ondemand");
+    std::cout << "[Info] Stopping threads..." << std::endl;
+    std::cout << "==================   end    ==================" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2)); // 2秒待機 wait for 2 seconds
     udp_thread_master.join(); // UDP receive thread from master
     udp_thread_copy.join(); // UDP receive thread from copy
     force_thread.join(); // force get thread

@@ -75,7 +75,6 @@ namespace robotcontrol{
             0.0
         );
         force_err = ideal_vector_data - actual_vector_data; // Force error
-        std::cout << "Force error: " << force_err.transpose() << std::endl;
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term
@@ -108,7 +107,6 @@ namespace robotcontrol{
             0.0
         );
         force_err = udp_vector_data - actual_vector_data; // Force error
-        std::cout << "Force error: " << force_err.transpose() << std::endl;
         //	[Vc]=Kp*[Pe] + Ki*integral([Pe]) + Kd*derivative([Pe]) 
         Integral_force		+= force_err;								//Calculate the integral term
         Derivative_force	= force_err - last_force_err;						//Calculate the derivative term

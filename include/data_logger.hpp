@@ -29,7 +29,7 @@ class DataLogger{
         void move_data();
 
     public:
-        DataLogger();
+        DataLogger(int monitor_port);
         
         void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt, double delay_time, double force_delay_time);
         void save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time);
