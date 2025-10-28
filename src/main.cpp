@@ -15,6 +15,7 @@
 # include "udp_connect.hpp"
 # include "force_get.hpp"
 # include "data_logger.hpp"
+# include "cycle_timer.hpp"
 
 
 
@@ -99,23 +100,15 @@ int main(){
     std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
 
     // dt計算用 dt calculation
-    std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
-    std::chrono::microseconds micro_last_clock; 
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
-    std::chrono::microseconds micro_current_clock;
-    std::chrono::microseconds micro_dt(10*1000); //dt
-    std::chrono::microseconds dt(10*1000); // calculation cycle
-    std::chrono::microseconds first_clock;  // first clock
-    /*
-    * ============== 処理 process ==============
-    */
-    last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
-    micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
-    first_clock = micro_last_clock;
-
+    std::chrono::microseconds T = std::chrono::microseconds(10*1000); // cycle time
+    std::chrono::microseconds micro_dt = T; // dt
+    int cycle_count = 0; // cycle count
+ 
     /*
     * ============== main roop ==============
     */
+    cycle_timer::CycleTimer cycle_timer{T};
     int safety_count = 0; // 安全カウント
     std::vector<int> not_get_count = {0,0,0}; // データが取得できなかった回数
     std::cout << "================== start ==================" << std::endl;
@@ -135,6 +128,7 @@ int main(){
     std::thread force_thread(&forceget::ForceActual::force_get_thread, &force_actual, std::ref(spi_service)); // force get thread
     
     while(!stop_flag){
+        cycle_count++;
         /*
         * queue取り出し
         * get queue
@@ -193,6 +187,16 @@ int main(){
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
         
+        if (cycle_count <= 500){
+            motor_control.send_voltage(0, 0, 0, spi_service);
+            const auto dt = cycle_timer.tick(); 
+            micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
+            std::cout << "\033[2J\033[1;1H"; 
+            std::cout << "[Info] RLS initializing... (" << cycle_count << "/500)" << std::endl;
+            not_get_count = {0,0,0};
+            continue;
+        }
+
         /*
         *  force getting
         */
@@ -251,16 +255,8 @@ int main(){
         /*
         *  adjusting the cycle
         */
-        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-        micro_dt = micro_current_clock - micro_last_clock;
-        if (micro_dt <= dt){
-            std::this_thread::sleep_for(dt - micro_dt);
-        }
-        current_clock = std::chrono::high_resolution_clock::now();
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-        micro_dt = micro_current_clock - micro_last_clock;
-        micro_last_clock = micro_current_clock;
+        const auto dt = cycle_timer.tick(); 
+        micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
         //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
