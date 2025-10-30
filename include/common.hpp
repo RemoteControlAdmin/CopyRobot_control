@@ -23,9 +23,6 @@ struct RobotData {
     std::vector<double> partner_master_data;
     std::array<double, 3> err_data;
     std::array<double, 3> last_err_data;
-    std::vector<double> last_master_data;
-    std::vector<double> last_copy_data;
-    std::vector<double> last_partner_master_data;
     std::vector<double> force_actual_data;
     std::vector<double> force_virtual_data;
     std::vector<double> force_ideal_data;

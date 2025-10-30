@@ -3,12 +3,11 @@
 #include <thread>  // ← 追加
 #include <unistd.h>
 #include <chrono>
-#include "spi_service.hpp"
+#include "spi/spi_service.hpp"
 
 int main() {
-    SPIService spi_service;
+    spi_lib::SPIService spi_service;
 
-    
     float V1 = 12.0f;
     float V2 = 12.0f;
     float V3 = 12.0f;

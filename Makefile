@@ -9,16 +9,21 @@ LDFLAGS  := -lpthread -lrt -lm
 TARGET   := test
 
 # ソースファイル
-CPPSRCS  := src/forward_kinematics.cpp src/inverce_kinematics.cpp src/motor_control.cpp src/data_logger.cpp \
-            src/robot_control.cpp src/robot_data_cal.cpp src/udp_connect.cpp src/csv_edit.cpp src/common.cpp\
-			src/spi_service.cpp  src/force_get.cpp src/cycle_timer.cpp\
+CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp src/robot/motor_control.cpp\
+            src/robot/robot_control.cpp src/robot/robot_data_cal.cpp src/robot/force_get.cpp src/robot/force_cal.cpp\
+			src/data/csv_edit.cpp src/data/data_logger.cpp\
+			src/net/udp_connect.cpp\
+			src/spi/spi_service.cpp\
+			src/utils/deque_manager.cpp src/utils/cpu_manager.cpp src/utils/delaytime_cal.cpp\
+			src/utils/cycle_timer.cpp src/utils/commandline.cpp\
+			src/common.cpp\
 			src/main.cpp
 
 #CPPSRCS  := src/spi_service.cpp \
 			src/check_main.cpp \
 
 
-CSRCS    := src/rp1-spi-util.c src/rp1-spi.c src/rpi5-rp1-spi.c
+CSRCS    := src/spi/rp1-spi-util.c src/spi/rp1-spi.c src/spi/rpi5-rp1-spi.c
 
 # オブジェクトファイル
 OBJS     := $(CPPSRCS:.cpp=.o) $(CSRCS:.c=.o)
@@ -40,4 +45,4 @@ $(TARGET): $(OBJS)
 
 # クリーン処理
 clean:
-	-rm -f $(TARGET) src/*.o
+	-rm -f $(TARGET) src/*.o src/robot/*.o src/data/*.o src/net/*.o src/spi/*.o src/utils/*.o
