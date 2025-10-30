@@ -64,7 +64,7 @@ while (true) {
     // --- モータ送信 ---
     bool result = spi_service.pico2_motor(V1, V2, V3);
     if (!result) {
-        std::cout << "[ERR] 処理が失敗しました。" << std::endl;
+        std::cout << "[ERR] Motor control failed." << std::endl;
     }
 
     // --- 実時間 dt 計測 ---

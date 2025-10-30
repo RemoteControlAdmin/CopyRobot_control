@@ -17,7 +17,7 @@ namespace robot_lib{
         result = spi_service.pico2_motor(V1, V2, V3);
         if(!result){
             std::cout << "[Error] Voltage out of range. Motor control failed" << std::endl;
-            //stop_flag = true;
+            stop_flag = true;
         }
     }
 

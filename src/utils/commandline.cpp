@@ -1,5 +1,19 @@
 # include "utils/commandline.hpp"
 
+
+std::string get_my_name(){
+    /* ホスト名（raspi-以下）を抽出する関数*/
+    char hostname[256];
+    if (gethostname(hostname, sizeof(hostname)) != 0){
+        std::cerr << "[Error] getting hostname" << std::endl;
+        exit(1);
+    }
+
+    std::string hostname_str(hostname);
+    return (hostname_str.substr(6)).substr(0,4);
+}
+
+
 std::pair<std::string, int> parse_command_line(int argc, char* argv[]){
     if (argc < 4){
         std::cerr << "[Error] Not enough arguments" << std::endl;
@@ -31,6 +45,10 @@ std::pair<std::string, int> parse_command_line(int argc, char* argv[]){
     auto it = ip_suffixes.find(target_copyrobot_name);
     if (it == ip_suffixes.end()) {
         std::cerr << "[Error] Invalid CopyRobot name" << std::endl;
+        std::exit(1);
+    }
+    else if (target_copyrobot_name == get_my_name()){
+        std::cerr << "[Error] Target CopyRobot name cannot be the same as this robot" << std::endl;
         std::exit(1);
     }
     std::string target_copyrobot_ip = head_ip + it->second;
