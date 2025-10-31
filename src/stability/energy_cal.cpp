@@ -9,10 +9,10 @@ namespace stability_lib{
     double EnergyCal::loc_energy_cal(std::vector<double> copy_data, 
         std::vector<double> master_data, std::vector<double> force_actual_data){ 
         double angle = atan2((master_data[1]-copy_data[1]),(master_data[0]-copy_data[0]));
-        double copy_power = (copy_data[3] *force_actual_data[0]*cos(angle + M_PI)) + 
-                            (copy_data[4] *force_actual_data[0]*sin(angle + M_PI));
-        double master_power = (master_data[3] *force_actual_data[0]*cos(angle)) +
-                                     (master_data[4] *force_actual_data[0]*sin(angle));
+        double copy_power = (copy_data[3] *force_actual_data[0]*cos(angle)) + 
+                            (copy_data[4] *force_actual_data[0]*sin(angle));
+        double master_power = (-master_data[3] *force_actual_data[0]*cos(angle)) +
+                                     (-master_data[4] *force_actual_data[0]*sin(angle));
         double loc_energy = copy_power + master_power;
 
         return loc_energy;
@@ -25,12 +25,12 @@ namespace stability_lib{
             robotdata.partner_master_data, robotdata.force_actual_data);
         push(std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count(), local_energy);
-        local_energy = nearest(send_time);
-        if (robotdata.force_virtual_data[2] > robot_d){
-            local_energy = 0.0;
-            remote_energy = 0.0;
-        }
-        sum_energy += (remote_energy + local_energy);
+        //local_energy = nearest(send_time);
+        //if (robotdata.force_virtual_data[2] > robot_d){
+        //    local_energy = 0.0;
+        //    remote_energy = 0.0;
+        //}
+        sum_energy = (remote_energy + local_energy);
 
         return sum_energy;
     }

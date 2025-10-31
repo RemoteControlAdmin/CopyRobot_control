@@ -16,8 +16,8 @@ namespace robot_lib{
     void MotorControl::send_voltage(float V1,float V2,float V3, spi_lib::SPIService& spi_service){
         result = spi_service.pico2_motor(V1, V2, V3);
         if(!result){
-            std::cout << "[Error] Voltage out of range. Motor control failed" << std::endl;
-            stop_flag = true;
+            std::cout << "[Warning] Voltage out of range. Motor control failed" << std::endl;
+            //stop_flag = true;
         }
     }
 
