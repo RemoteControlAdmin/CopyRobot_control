@@ -22,7 +22,7 @@ namespace robot_lib { // 名前空間 (任意の名前，ソースと合わせ�
     ForceCal(); // コンストラクタの宣言
 
     std::vector<double> FEActCal(std::vector<double> copy_data, std::vector<double> force_values); // 力環境の実際の値を計算する関数の宣言
-    double FUDPCal(std::vector<double> force_values);
+    std::vector<double> FUDPCal(std::vector<double> force_values, std::vector<double> remote_copy_data);
     //double FEActSwapCal(); // 力環境の実際の値をロボットフレームからグローバルフレームに変換する関数の宣言
     
     private: // 以下private関数と変数の宣言

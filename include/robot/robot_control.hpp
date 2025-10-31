@@ -23,7 +23,7 @@ namespace robot_lib {
          std::vector<double> force_ideal_data, std::vector<double> master_data, int microdt);
 
     std::vector<double> bilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
-         double force_udp_data, std::vector<double> master_data, int microdt);
+         std::vector<double> force_udp_data, std::vector<double> master_data, int microdt);
     private:
     
     std::vector<double> corrected_pos(std::vector<double> master_data, Eigen::Vector3d force_pos_data);

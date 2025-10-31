@@ -16,7 +16,7 @@
 # include "utils/cpu_manager.hpp"
 # include "utils/delaytime_cal.hpp"
 # include "utils/commandline.hpp"
-
+# include "stability/energy_cal.hpp"
 
 void end_task(int signum){
     if(signum == SIGINT) {
@@ -46,6 +46,7 @@ int main(int argc, char* argv[]){
     //net_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
     data_lib::DataLogger data_logger{monitor_port}; // data logger
     utils::DequeManager deque_manager{target_copyrobot_ip}; // deque manager
+    stability_lib::EnergyCal energy_cal{}; // energy calculation
     /*
     * ローカル変数定義　local variable definition
     */
@@ -97,8 +98,9 @@ int main(int argc, char* argv[]){
         * get queue
         */
         auto master_data = deque_manager.get_master_data();
-        robotdata.master_data = master_data.first;
-        master_send_time = master_data.second;
+        robotdata.master_data = std::get<0>(master_data);
+        robotdata.remote_copy_data = std::get<1>(master_data);
+        master_send_time = std::get<2>(master_data);
         auto copy_data = deque_manager.get_copy_data();
         robotdata.copy_data = copy_data.first;
         robotdata.partner_master_data = copy_data.second;
@@ -130,8 +132,10 @@ int main(int argc, char* argv[]){
         robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data, deque_manager.get_actforce_data());
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
-        robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values);
-    
+        robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values, robotdata.remote_copy_data);
+        
+        double energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
+        
         /*
         * force control
         */
@@ -174,7 +178,7 @@ int main(int argc, char* argv[]){
         */
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
-        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time);
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*

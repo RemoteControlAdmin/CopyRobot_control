@@ -64,7 +64,7 @@ std::vector<double> SPIService::read_adc(){
 
 SPIService::~SPIService(){
   send_spi(spi1, 0xF9); // SPI1に終了信号を送信
-  std::cout << "[INFO] SPIService Destructed" << std::endl;
+  std::cout << "[Info] SPIService Destructed" << std::endl;
 }
 
 } // namespace spi_lib

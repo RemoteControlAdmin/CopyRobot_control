@@ -12,6 +12,7 @@ TARGET   := test
 CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp src/robot/motor_control.cpp\
             src/robot/robot_control.cpp src/robot/robot_data_cal.cpp src/robot/force_get.cpp src/robot/force_cal.cpp\
 			src/data/csv_edit.cpp src/data/data_logger.cpp\
+			src/stability/energy_cal.cpp\
 			src/net/udp_connect.cpp\
 			src/spi/spi_service.cpp\
 			src/utils/deque_manager.cpp src/utils/cpu_manager.cpp src/utils/delaytime_cal.cpp\
@@ -45,4 +46,4 @@ $(TARGET): $(OBJS)
 
 # クリーン処理
 clean:
-	-rm -f $(TARGET) src/*.o src/robot/*.o src/data/*.o src/net/*.o src/spi/*.o src/utils/*.o
+	-rm -f $(TARGET) src/*.o src/robot/*.o src/data/*.o src/net/*.o src/spi/*.o src/utils/*.o src/stability/*.o

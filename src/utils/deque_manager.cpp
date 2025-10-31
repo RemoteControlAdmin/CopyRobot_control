@@ -9,6 +9,7 @@ namespace utils{
             master_last_data = std::vector<double>(6, 0.0);
             copy_last_data = std::vector<double>(6, 0.0);
             partner_master_last_data = std::vector<double>(6, 0.0);
+            remote_copy_last_data = std::vector<double>(6, 0.0);
         } //コンストラクタ
 
     void DequeManager::udp_thread_manager(){
@@ -45,7 +46,7 @@ namespace utils{
         not_get_count = {0,0,0};
     }
 
-    std::pair<std::vector<double>, int64_t> DequeManager::get_master_data(){
+    std::tuple<std::vector<double>, std::vector<double>, int64_t> DequeManager::get_master_data(){
         /*
         * masterデータ取得 get master data
         */
@@ -53,18 +54,22 @@ namespace utils{
             std::lock_guard<std::mutex> lock(queue_mutex_master);
             if (!deque_master.empty()){
                 std::pair<std::vector<double>, int64_t> getdata = deque_master.front();
-                master_data = getdata.first;
+                temp_master_data = getdata.first;
+                master_data.assign(temp_master_data.begin(), temp_master_data.begin()+6);
+                remote_copy_data.assign(temp_master_data.begin()+6, temp_master_data.end());
                 master_send_time = getdata.second;
                 master_last_data = master_data;
+                remote_copy_last_data = remote_copy_data;
                 deque_master.pop_front();
             }
             else{
                 master_data = master_last_data;
+                remote_copy_data = remote_copy_last_data;
                 not_get_count[0]++;
             }
         } // unlock用
 
-        return {master_data, master_send_time};
+        return {master_data, remote_copy_data, master_send_time};
     }
 
     std::pair<std::vector<double>, std::vector<double>> DequeManager::get_copy_data(){

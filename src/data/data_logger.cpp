@@ -29,10 +29,10 @@ void DataLogger::initialize_csv(){
                             "Vm1","Vm2","Vm3",
                             "FEactM","FEactA",
                             "FEvirM","FEvirA","VirDir",
-                            "FIdeaM","FIdeaA","IdeDir"});
+                            "FIdeaM","FIdeaA","IdeDir", "Energy"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, double energy){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
@@ -51,7 +51,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); // 2
     csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
     csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
-            
+    csv_vector.push_back(energy); // 1
     csv_data = {{send_clock, receive_clock},csv_vector};
     csvWriter.csv_write_data(csv_data);
 }
@@ -92,7 +92,7 @@ void DataLogger::show_data(RobotData robotdata, Eigen::Vector3d velocity_data, i
               << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[1]))
               << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
               << std::endl;
-    std::cout << std::left << std::setw(20) << ("FUDPM = " + std::to_string(robotdata.force_udp_data))
+    std::cout << std::left << std::setw(20) << ("FUDPM = " + std::to_string(robotdata.force_udp_data[0]))
               << std::endl;
     std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt))
               << std::endl;
@@ -116,14 +116,14 @@ void DataLogger::send_monitor(RobotData robotdata, double delay_time, int64_t re
 void DataLogger::move_data(){
     std::string local_file = "output_file/" + get_my_name() + ".csv";
     std::string remote_path = R"(/mnt/shared_csv/)" + get_my_name() + ".csv"; // 共有フォルダのパスを指定
-    std::cout << "[INFO] Moving file " << remote_path << std::endl;
+    std::cout << "[Info] Moving file " << remote_path << std::endl;
     try {
         std::filesystem::copy_file(local_file, remote_path, std::filesystem::copy_options::overwrite_existing);
         // 移動にしたい場合は元ファイルを削除
         //std::filesystem::remove(local_file);
-        std::cout << "[INFO] File move completed" << std::endl;
+        std::cout << "[Info] File move completed" << std::endl;
     } catch (std::filesystem::filesystem_error& e) {
-        std::cerr << "[ERROR] " << e.what() << std::endl;
+        std::cerr << "[Error] " << e.what() << std::endl;
     }
 }
 

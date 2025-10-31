@@ -21,7 +21,7 @@ namespace utils {
 
     void rest_not_get_coount();
 
-    std::pair<std::vector<double>, int64_t> get_master_data();
+    std::tuple<std::vector<double>, std::vector<double>, int64_t> get_master_data();
     std::pair<std::vector<double>, std::vector<double>> get_copy_data();
     std::pair<std::vector<double>, int64_t> get_udpforce_data();
     std::vector<double> get_actforce_data();
@@ -54,8 +54,11 @@ namespace utils {
     std::mutex queue_mutex_udpforce;
     
     std::vector<double> master_data;
+    std::vector<double> remote_copy_data;
+    std::vector<double> temp_master_data;
     int64_t master_send_time;
     std::vector<double> master_last_data;
+    std::vector<double> remote_copy_last_data;
 
     std::vector<double> copy_data;
     std::vector<double> copy_last_data;

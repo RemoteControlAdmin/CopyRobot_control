@@ -89,7 +89,7 @@ namespace robot_lib{
     }
 
     std::vector<double> RobotControl::bilateral_force_control(std::vector<double> force_actual_data, std::vector<double> force_virtual_data,
-        double force_udp_data, std::vector<double> master_data, int microdt){
+        std::vector<double> force_udp_data, std::vector<double> master_data, int microdt){
         if(force_virtual_data[2] >= 0.38){
             return master_data;
         }
@@ -102,8 +102,8 @@ namespace robot_lib{
         );
 
         udp_vector_data = Eigen::Vector3d(
-            force_udp_data * std::cos(force_virtual_data[1]),
-            force_udp_data * std::sin(force_virtual_data[1]),
+            force_udp_data[0] * std::cos(force_virtual_data[1]),
+            force_udp_data[0] * std::sin(force_virtual_data[1]),
             0.0
         );
         force_err = udp_vector_data - actual_vector_data; // Force error

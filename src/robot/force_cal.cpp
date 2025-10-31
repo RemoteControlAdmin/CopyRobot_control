@@ -59,7 +59,7 @@ namespace robot_lib {
         return {FEactM,FEactMa};
     }
 
-    double ForceCal::FUDPCal(std::vector<double> force_values){
+    std::vector<double> ForceCal::FUDPCal(std::vector<double> force_values, std::vector<double> remote_copy_data){
         // force_values = [FAx, FAy, FBx, FBy]
         const double ax_local = force_values[0];
         const double ay_local = force_values[1];
@@ -88,7 +88,7 @@ namespace robot_lib {
         //if (std::sqrt(fx_total * fx_total + fy_total * fy_total) < 1.0){
         //    return 0;
         //}
-        return std::sqrt(fx_total * fx_total + fy_total * fy_total);
+        return {std::sqrt(fx_total * fx_total + fy_total * fy_total), std::atan2(fy_total, fx_total)+ remote_copy_data[2]};
     }
 
 
