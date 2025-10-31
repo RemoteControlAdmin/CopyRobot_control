@@ -88,6 +88,7 @@ namespace robot_lib {
         //if (std::sqrt(fx_total * fx_total + fy_total * fy_total) < 1.0){
         //    return 0;
         //}
+
         return {std::sqrt(fx_total * fx_total + fy_total * fy_total), std::atan2(fy_total, fx_total)+ remote_copy_data[2]};
     }
 

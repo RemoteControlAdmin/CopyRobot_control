@@ -82,7 +82,7 @@ std::pair<std::vector<double>, int64_t> UdpConnect::udp_recv() {
 
     // 受信データのサイズが設定済みのバッファサイズと一致するか確認
     if (received_bytes != total_buffer_size) {
-        std::cerr << "[Warning] Received data size mismatch!" << std::endl;
+        std::cerr << "[Warning] Received data size mismatch!: " << received_bytes << " != " << total_buffer_size << std::endl;
         return {};
     }
     // 受信データをstd::vector<double>に変換
@@ -119,30 +119,12 @@ UdpCommunicator::UdpCommunicator(std::deque<std::pair<std::vector<double>, int64
 void UdpCommunicator::recive_thread_from_master(){
     UdpConnect udpConnection_from_master("0.0.0.0", 40000, 12); // from Master Robot
     udpConnection_from_master.udp_bind();
-    /* 受信周期確認用
-    std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
-    std::chrono::microseconds micro_last_clock; 
-    std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
-    std::chrono::microseconds micro_current_clock;
-    std::chrono::microseconds micro_dt; //dt
-    std::chrono::microseconds first_clock;  // 最初の時刻*/
-    /*
-    * ============== 処理 process ==============
-    */
-    //last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
-    //micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
-    //first_clock = micro_last_clock;
     
-    //csv_lib::Csvedit csvWriter("test.csv");
-    //csvWriter.csv_write_headers({"MRpx", "MRpy","MRth","CRpx", "CRpy","CRth","count","Time"});
-    //std::pair<std::pair<std::vector<double>, int> ,std::chrono::nanoseconds> csv_data;
     while(!stop_flag){
         std::pair<std::vector<double>, int64_t> receiveddata_master = udpConnection_from_master.udp_recv(); // from master robot
-        
         if (receiveddata_master.first.empty()) {
             continue;  // 空データならスキップ
         }
-        //std::cout << "master data: " << receiveddata_master.first[0] << std::endl;
 	    //std::cout << "count" << receiveddata_master.second << std::endl;
         {
             std::lock_guard<std::mutex> lock(queue_mutex_master_); // lock

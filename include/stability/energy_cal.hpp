@@ -1,4 +1,4 @@
-#pragma
+#pragma once
 #include <cmath>
 #include <vector>
 #define _USE_MATH_DEFINES  // M_PIを使用するために必要
@@ -30,6 +30,7 @@ namespace stability_lib {
         double x;
     };
 
+    double robot_d = 0.38 + 0.01;
 
     std::deque<Rec> q_;
     static constexpr std::size_t K = 100;
