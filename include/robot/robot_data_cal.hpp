@@ -15,8 +15,8 @@ namespace robot_lib {
 
     RobotDataCal();
 
-    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> convert_robotdata(std::vector<double> master_data,
-        std::vector<double> copy_data, std::vector<double> partner_master_data);
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>, std::vector<double>> convert_robotdata(std::vector<double> master_data,
+        std::vector<double> copy_data, std::vector<double> partner_master_data, std::vector<double> remote_copy_data);
     std::array<double,3> err_robotposition_cal(std::vector<double> master_data, std::vector<double> copy_data);
     std::vector<double> MRobot_Linear_PositionCal(std::vector<double> data, int time);
     private:

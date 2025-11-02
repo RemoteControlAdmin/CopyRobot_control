@@ -61,10 +61,10 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), energy.begin(), energy.end()); // 1
     /* debug data
     */
-    csv_vector.insert(csv_vector.end(), robotdata.copy_data.begin(), robotdata.copy_data.end()); // 3
-    csv_vector.insert(csv_vector.end(), robotdata.master_data.begin(), robotdata.master_data.end()); // 3
-    csv_vector.insert(csv_vector.end(), robotdata.remote_copy_data.begin(), robotdata.remote_copy_data.end()); // 3
-    csv_vector.insert(csv_vector.end(), robotdata.partner_master_data.begin(), robotdata.partner_master_data.end()); // 3
+    csv_vector.insert(csv_vector.end(), robotdata.copy_data.begin(), robotdata.copy_data.begin()+3); // 3
+    csv_vector.insert(csv_vector.end(), robotdata.master_data.begin(), robotdata.master_data.begin()+3); // 3
+    csv_vector.insert(csv_vector.end(), robotdata.remote_copy_data.begin(), robotdata.remote_copy_data.begin()+3); // 3
+    csv_vector.insert(csv_vector.end(), robotdata.partner_master_data.begin(), robotdata.partner_master_data.begin()+3); // 3
     /*
     */
     csv_data = {{send_clock, receive_clock},csv_vector};

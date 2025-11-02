@@ -16,13 +16,14 @@ namespace robot_lib{
         return data;
     }
     // public
-    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> RobotDataCal::convert_robotdata(std::vector<double> master_data, 
-        std::vector<double> copy_data, std::vector<double> partner_master_data){
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>, std::vector<double>> RobotDataCal::convert_robotdata(std::vector<double> master_data, 
+        std::vector<double> copy_data, std::vector<double> partner_master_data, std::vector<double> remote_copy_data){
         master_data = RobotDataCal::convert_m_rad(master_data);
         copy_data = RobotDataCal::convert_m_rad(copy_data);
         partner_master_data = RobotDataCal::convert_m_rad(partner_master_data);
+        remote_copy_data = RobotDataCal::convert_m_rad(remote_copy_data);
 
-        return {master_data, copy_data, partner_master_data};
+        return {master_data, copy_data, partner_master_data, remote_copy_data};
     }
     //[Pe]=[Pd]-[Pg]
     std::array<double,3> RobotDataCal::err_robotposition_cal(std::vector<double> master_data, std::vector<double> copy_data){
