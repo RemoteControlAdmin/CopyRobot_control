@@ -22,7 +22,7 @@ namespace stability_lib {
     double loc_energy_cal(std::vector<double> copy_data, 
         std::vector<double> partner_master_data, std::vector<double> force_actual_data); // 関数（任意の名前）
     
-    double sum_energy_cal(RobotData robotdata, int64_t send_time); // 関数（任意の名前）
+    std::vector<double> sum_energy_cal(RobotData robotdata, int64_t send_time); // 関数（任意の名前）
     private: // 以下private関数と変数の宣言
     
     struct Rec {

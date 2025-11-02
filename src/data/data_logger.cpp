@@ -4,7 +4,7 @@
 namespace data_lib{
     
 DataLogger::DataLogger(int monitor_port): csvWriter("output_file/" + get_my_name() + ".csv"),
-                        csv_vector(26, 0.0),
+                        csv_vector(27, 0.0),
                         udpConnection_monitor("100.124.38.52", monitor_port, 7)
                         {
     initialize_csv();
@@ -29,10 +29,11 @@ void DataLogger::initialize_csv(){
                             "Vm1","Vm2","Vm3",
                             "FEactM","FEactA",
                             "FEvirM","FEvirA","VirDir",
-                            "FIdeaM","FIdeaA","IdeDir", "Energy"});
+                            "FIdeaM","FIdeaA","IdeDir", 
+                            "SumEnergy","RemoteEnergy","LocalEnergy"});
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, double energy){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<double> energy){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
@@ -51,7 +52,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); // 2
     csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
     csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
-    csv_vector.push_back(energy); // 1
+    csv_vector.insert(csv_vector.end(), energy.begin(), energy.end()); // 1
     csv_data = {{send_clock, receive_clock},csv_vector};
     csvWriter.csv_write_data(csv_data);
 }

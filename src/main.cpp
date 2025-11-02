@@ -134,7 +134,7 @@ int main(int argc, char* argv[]){
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
         robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values, robotdata.remote_copy_data);
         
-        double energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
+        std::vector<double> energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
         
         /*
         * force control

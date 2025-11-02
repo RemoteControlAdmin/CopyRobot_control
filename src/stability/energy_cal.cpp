@@ -9,16 +9,16 @@ namespace stability_lib{
     double EnergyCal::loc_energy_cal(std::vector<double> copy_data, 
         std::vector<double> master_data, std::vector<double> force_actual_data){ 
         double angle = atan2((master_data[1]-copy_data[1]),(master_data[0]-copy_data[0]));
-        double copy_power = (copy_data[3] *force_actual_data[0]*cos(angle)) + 
-                            (copy_data[4] *force_actual_data[0]*sin(angle));
-        double master_power = (-master_data[3] *force_actual_data[0]*cos(angle)) +
-                                     (-master_data[4] *force_actual_data[0]*sin(angle));
+        double copy_power = (copy_data[3] *(-force_actual_data[0]*cos(angle))) + 
+                            (copy_data[4] *(-force_actual_data[0]*sin(angle)));
+        double master_power = (master_data[3] *(force_actual_data[0]*cos(angle))) +
+                                     (master_data[4] *(force_actual_data[0]*sin(angle)));
         double loc_energy = copy_power + master_power;
 
         return loc_energy;
     }
 
-    double EnergyCal::sum_energy_cal(RobotData robotdata, int64_t send_time){
+    std::vector<double> EnergyCal::sum_energy_cal(RobotData robotdata, int64_t send_time){
         double remote_energy = loc_energy_cal(robotdata.remote_copy_data,
             robotdata.master_data, robotdata.force_udp_data);
         double local_energy = loc_energy_cal(robotdata.copy_data,
@@ -32,7 +32,7 @@ namespace stability_lib{
         //}
         sum_energy = (remote_energy + local_energy);
 
-        return sum_energy;
+        return {sum_energy, remote_energy, local_energy};
     }
 
     void EnergyCal::push(int64_t t_ns, double x){
