@@ -36,8 +36,9 @@ namespace stability_lib {
     static constexpr std::size_t K = 100;
 
     double sum_energy;
-
-
+    double master_friction;
+    double copy_friction;
+    
     void push(int64_t t_ns, double x);
     double nearest(int64_t t);
 
