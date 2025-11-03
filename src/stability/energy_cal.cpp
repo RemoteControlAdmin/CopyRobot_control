@@ -5,18 +5,18 @@ namespace stability_lib{
     EnergyCal::EnergyCal(){
         sum_energy = 0.0;
         master_friction = 0.8;
-        copy_friction = 3.0;
+        copy_friction = 0.8;
     } //コンストラクタ
     
     double EnergyCal::loc_energy_cal(std::vector<double> copy_data, 
         std::vector<double> master_data, std::vector<double> force_actual_data){ 
         double angle = atan2((master_data[1]-copy_data[1]),(master_data[0]-copy_data[0]));
-        double copy_power = (copy_data[3] *(-force_actual_data[0]*cos(angle))) + 
-                            (copy_data[4] *(-force_actual_data[0]*sin(angle)));
-        copy_power += (copy_friction * std::pow(copy_data[3], 2)) + (copy_friction * std::pow(copy_data[4], 2)); // angular velocity is 0
-        double master_power = (master_data[3] *(force_actual_data[0]*cos(angle))) +
-                                     (master_data[4] *(force_actual_data[0]*sin(angle)));
-        master_power += (master_friction * std::pow(master_data[3], 2)) + (master_friction * std::pow(master_data[4], 2)); // angular velocity is 0
+        double copy_power = (copy_data[3] *(force_actual_data[0]*cos(angle))) + 
+                            (copy_data[4] *(force_actual_data[0]*sin(angle)));
+        copy_power -= (copy_friction * std::pow(copy_data[3], 2)) + (copy_friction * std::pow(copy_data[4], 2)); // angular velocity is 0
+        double master_power = (master_data[3] *(-force_actual_data[0]*cos(angle))) +
+                                     (master_data[4] *(-force_actual_data[0]*sin(angle)));
+        master_power -= (master_friction * std::pow(master_data[3], 2)) + (master_friction * std::pow(master_data[4], 2)); // angular velocity is 0
         double loc_energy = copy_power + master_power;
 
         return loc_energy;
@@ -30,10 +30,11 @@ namespace stability_lib{
 
         push(std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()).count(), local_energy);
-        //local_energy = nearest(send_time);
+        local_energy = nearest(send_time);
         if (robotdata.force_virtual_data[2] > robot_d){
             local_energy = 0.0;
             remote_energy = 0.0;
+            sum_energy = 0.0;
         }
         sum_energy += (remote_energy + local_energy);
 

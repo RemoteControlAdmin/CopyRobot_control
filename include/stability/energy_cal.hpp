@@ -38,7 +38,7 @@ namespace stability_lib {
     double sum_energy;
     double master_friction;
     double copy_friction;
-    
+
     void push(int64_t t_ns, double x);
     double nearest(int64_t t);
 
