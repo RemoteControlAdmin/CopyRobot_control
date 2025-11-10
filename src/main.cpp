@@ -117,7 +117,7 @@ int main(int argc, char* argv[]){
         robotdata.partner_master_data = std::get<2>(temp_convert_data); robotdata.remote_copy_data = std::get<3>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
         
-        if (cycle_count <= 500){
+        if (cycle_count <= 10){
             motor_control.send_voltage(0, 0, 0, spi_service);
             const auto dt = cycle_timer.tick(); 
             micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
