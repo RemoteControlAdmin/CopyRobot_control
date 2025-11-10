@@ -6,7 +6,7 @@ CFLAGS   := -std=c++20 -O3 -Wall -funroll-loops
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm
-TARGET   := test
+TARGET   := Init
 
 # ソースファイル
 CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp src/robot/motor_control.cpp\
