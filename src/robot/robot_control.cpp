@@ -6,12 +6,12 @@ namespace robot_lib{
     RobotControl::RobotControl(){
         Integral = std::vector<double> {0,0,0};
         Derivative = std::vector<double> {0,0,0};
-        Kp = 1; // medium 35
-        Ki = 1; // 5
-        Kd = 0.1; //
+        Kp = 35; // medium 35
+        Ki = 35; // 5
+        Kd = 1; //
 
-        Kp_force = 0.003125; // medium 0.5 high 1.0
-        Ki_force = 0.003125; // medium 0.01 high 0.1
+        Kp_force = 1/320; // 0.003125
+        Ki_force = 1/320; // 0.003125
         Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){
