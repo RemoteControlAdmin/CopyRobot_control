@@ -6,10 +6,10 @@ CFLAGS   := -std=c++20 -O3 -Wall -funroll-loops
 DEFINES  := -D_REENTRANT -DAFFY
 INCLUDES := -I./include -I/usr/include/eigen3
 LDFLAGS  := -lpthread -lrt -lm
-TARGET   := test_motor_sensor
+TARGET   := test
 
 # source files
-#CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp src/robot/motor_control.cpp\
+CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp src/robot/motor_control.cpp\
             src/robot/robot_control.cpp src/robot/robot_data_cal.cpp src/robot/force_get.cpp src/robot/force_cal.cpp\
 			src/data/csv_edit.cpp src/data/data_logger.cpp\
 			src/stability/energy_cal.cpp\
@@ -20,7 +20,7 @@ TARGET   := test_motor_sensor
 			src/common.cpp\
 			src/main.cpp
 # test sources
-CPPSRCS  := src/spi/spi_service.cpp \
+#CPPSRCS  := src/spi/spi_service.cpp \
 			src/check_main.cpp \
 
 
