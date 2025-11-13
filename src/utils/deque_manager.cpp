@@ -134,6 +134,8 @@ namespace utils{
     }
     
     DequeManager::~DequeManager() noexcept {
+        std::cout << "[Info] Stopping DequeManager threads..." << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(4)); // 4秒待機 wait for 4 seconds
         auto safe_join = [](std::thread& th){
             if (th.joinable()) th.join();
         };
