@@ -52,13 +52,17 @@ namespace utils {
     // 力センサー（UDP）の値を格納するキュー
     std::deque<std::pair<std::vector<double>, int64_t>> deque_udpforce;
     std::mutex queue_mutex_udpforce;
-    
-    std::vector<double> master_data;
-    std::vector<double> remote_copy_data;
-    std::vector<double> temp_master_data;
-    int64_t master_send_time;
-    std::vector<double> master_last_data;
-    std::vector<double> remote_copy_last_data;
+    double sum = 0;
+    int64_t last_target_time = 0;
+    int64_t target_time = 0;
+    std::vector<double> master_data= std::vector<double>(6, 0.0);
+    std::vector<double> test_master= std::vector<double>(6, 0.0);
+    std::vector<double> remote_copy_data = std::vector<double>(6, 0.0);
+    std::vector<double> temp_master_data = std::vector<double>(12, 0.0);
+    int64_t master_send_time = 0;
+    int64_t master_last_send_data = 0;
+    std::vector<double> master_last_data = std::vector<double>(6, 0.0);
+    std::vector<double> remote_copy_last_data = std::vector<double>(6, 0.0);
 
     std::vector<double> copy_data;
     std::vector<double> copy_last_data;
@@ -68,8 +72,12 @@ namespace utils {
 
     std::vector<double> force_udp_values;
     int64_t force_send_time = 0;
-
+    int tempcount = 0;
     std::vector<double> force_values;
     
+    std::vector<double> master_lp_out_;  // 1次IIR後の出力保持
+    bool   master_lp_init_;              // 初期化フラグ
+    double master_lp_alpha_;             // フィルタ係数 (0,1]
+
     }; 
 } // namespace utils

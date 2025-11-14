@@ -17,6 +17,7 @@
 # include "utils/delaytime_cal.hpp"
 # include "utils/commandline.hpp"
 # include "stability/energy_cal.hpp"
+# include "rlsarpmin.hpp"
 
 void end_task(int signum){
     if(signum == SIGINT) {
@@ -47,6 +48,11 @@ int main(int argc, char* argv[]){
     data_lib::DataLogger data_logger{monitor_port}; // data logger
     utils::DequeManager deque_manager{target_copyrobot_ip}; // deque manager
     stability_lib::EnergyCal energy_cal{}; // energy calculation
+    std::array<rlsarpmin::RLSARPMin, 3> rls = {
+        rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,0),
+        rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,1),
+        rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,2),
+    };
     /*
     * ローカル変数定義　local variable definition
     */
@@ -62,6 +68,9 @@ int main(int argc, char* argv[]){
 
     // 一時的にcopyとpartnerのデータを保持するための変数
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>,std::vector<double>> temp_convert_data;
+    
+    std::vector<std::optional<double>> predict_master_data(3, std::nullopt);
+    
     // 力センサー（UDP）の値を保持するための変数
     std::vector<double> force_udp_values(4, 0.0);
     // 力制御によるmasterロボットの一次変数
@@ -116,7 +125,12 @@ int main(int argc, char* argv[]){
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); 
         robotdata.partner_master_data = std::get<2>(temp_convert_data); robotdata.remote_copy_data = std::get<3>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
-        
+        int k = int((delay_time)/10);
+        std::cout << "k = " << k << std::endl;
+        for(int i = 0; i < 3; i++){
+            predict_master_data[i] = rls[i](robotdata.master_data[i], k);
+            //robotdata.master_data[i] = predict_master_data[i].value_or(robotdata.master_data[i]);
+        }
         if (cycle_count <= 500){
             motor_control.send_voltage(0, 0, 0, spi_service);
             const auto dt = cycle_timer.tick(); 
@@ -143,7 +157,7 @@ int main(int argc, char* argv[]){
         double force_delay_time = cal_delay_time(force_send_time);
         force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
             robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
-        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
+        //robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
         
         /*
         * robot control
@@ -194,7 +208,7 @@ int main(int argc, char* argv[]){
     std::cout << "[Info] Stopping threads..." << std::endl;
     std::cout << "==================   end    ==================" << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(2)); // 2秒待機 wait for 2 seconds
-    
+    std::cout << "[Info] Cycle count: " << cycle_count << std::endl;
     std::cout << "[Info] Program terminated gracefully." << std::endl;
     return 0;
     
