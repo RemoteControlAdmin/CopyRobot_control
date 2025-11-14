@@ -48,11 +48,10 @@ int main(int argc, char* argv[]){
     data_lib::DataLogger data_logger{monitor_port}; // data logger
     utils::DequeManager deque_manager{target_copyrobot_ip}; // deque manager
     stability_lib::EnergyCal energy_cal{}; // energy calculation
-    std::array<rlsarpmin::RLSARPMin, 4> rls = {
+    std::array<rlsarpmin::RLSARPMin, 3> rls = {
         rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,0),
         rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,1),
         rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,2),
-        rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,3),
     };
     /*
     * ローカル変数定義　local variable definition
@@ -71,7 +70,6 @@ int main(int argc, char* argv[]){
     std::tuple <std::vector<double>, std::vector<double>, std::vector<double>,std::vector<double>> temp_convert_data;
     
     std::vector<std::optional<double>> predict_master_data(3, std::nullopt);
-    std::vector<std::optional<double>> predict_force_data(1, std::nullopt);
     
     // 力センサー（UDP）の値を保持するための変数
     std::vector<double> force_udp_values(4, 0.0);
@@ -150,10 +148,9 @@ int main(int argc, char* argv[]){
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
         robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values, robotdata.remote_copy_data);
-        k = int((cal_delay_time(force_send_time))/10);
-        predict_force_data[0] = rls[3](robotdata.force_udp_data[0], k);
+        
         std::vector<double> energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
-        robotdata.force_udp_data[0] = predict_force_data[0].value_or(robotdata.force_udp_data[0]);
+        
         /*
         * force control
         */
