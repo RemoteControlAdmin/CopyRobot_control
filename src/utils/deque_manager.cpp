@@ -117,7 +117,7 @@ namespace utils{
             // 単純に前回の出力を 10ms 進めてそのまま返す（ホールド）
             target_time      = last_target_time + 10 * 1000 * 1000;
             last_target_time = target_time;
-            return {test_master, remote_copy_data, target_time};
+            return {master_data, remote_copy_data, master_send_time};//return {test_master, remote_copy_data, target_time};
         }
     } // unlock 用
 
@@ -131,7 +131,7 @@ namespace utils{
     if (master_send_time <= master_last_send_data){
         target_time      = last_target_time + 10 * 1000 * 1000;
         last_target_time = target_time;
-        return {test_master, remote_copy_data, target_time};
+        return {master_data, remote_copy_data, master_send_time};//return {test_master, remote_copy_data, target_time};
     }
 
     // ★ここが重要：次の出力時刻は必ず「前回の target_time + 10ms」
@@ -179,7 +179,7 @@ namespace utils{
     master_last_send_data = master_send_time;
 
     // ★IIR後のデータを返す
-    return {master_lp_out_, remote_copy_data, target_time};
+    return {master_data, remote_copy_data, master_send_time};//eturn {master_lp_out_, remote_copy_data, target_time};
 }
     
 

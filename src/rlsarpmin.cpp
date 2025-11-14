@@ -18,7 +18,7 @@ RLSARPMin::RLSARPMin(int p, int k, double lambda, double delta, double eps, int 
       out_ma_sum_(0.0),   // ← 同上
       out_ema_(0.0),
       out_ema_init_(false),
-      ema_alpha_(0.3)     // とりあえず 0.2〜0.5 あたりから試す
+      ema_alpha_(0.2)     // とりあえず 0.2〜0.5 あたりから試す
 {
     if (p_ <= 0 || k_ <= 0) throw std::invalid_argument("p,k must be positive.");
     if (lam_ <= 0.0 || lam_ > 1.0) throw std::invalid_argument("lambda in (0,1].");
