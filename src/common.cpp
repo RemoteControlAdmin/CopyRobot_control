@@ -8,14 +8,13 @@ RobotData::RobotData()
     : master_data(6, 0.0),
       copy_data(6, 0.0),
       partner_master_data(6, 0.0),
+      remote_copy_data(6, 0.0),
       err_data{{0.0, 0.0, 0.0}},
       last_err_data{{0.0, 0.0, 0.0}},
-      last_master_data(6, 0.0),
-      last_copy_data(6, 0.0),
-      last_partner_master_data(6, 0.0),
       force_actual_data(2, 0.0),
       force_virtual_data(6, 0.0),
-      force_ideal_data(6, 0.0)
+      force_ideal_data(6, 0.0),
+      force_udp_data(2, 0.0)
 {}
 
 // Mat3x1構造体のコンストラクタ定義

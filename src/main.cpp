@@ -1,95 +1,59 @@
-# include <thread>
-# include <deque>
-# include <mutex>
 # include <vector>
 # include <cmath>
 # include <iterator>
 # include <iostream>
-# include <iomanip>
+# include <cstdlib>
 # include "common.hpp"
-# include "motor_control.hpp"
-# include "robot_data_cal.hpp"
-# include "robot_control.hpp"
-# include "inverce_kinematics.hpp"
-# include "udp_connect.hpp"
-# include "force_get.hpp"
+# include "spi/spi_service.hpp"
+# include "robot/motor_control.hpp"
+# include "robot/robot_data_cal.hpp"
+# include "robot/robot_control.hpp"
+# include "robot/inverce_kinematics.hpp"
+# include "robot/force_cal.hpp"
+# include "data/data_logger.hpp"
+# include "utils/cycle_timer.hpp"
+# include "utils/deque_manager.hpp"
+# include "utils/cpu_manager.hpp"
+# include "utils/delaytime_cal.hpp"
+# include "utils/commandline.hpp"
+# include "stability/energy_cal.hpp"
 
 void end_task(int signum){
     if(signum == SIGINT) {
-        std::cout << "\n[INFO] Ctrl+C detected. Exiting..." << std::endl;
+        std::cout << "\n[Info] Ctrl+C detected. Exiting..." << std::endl;
         stop_flag = 1;
     }
 }
 
-void show_data(RobotData robotdata, Eigen::Vector3d velocity_data, int dt){
-    std::cout << "\033[2J\033[1;1H"; // Clear the console
-    std::cout << "================== show data ==================" << std::endl;
-    std::cout << std::left << std::setw(20) << ("Mpx = " + std::to_string(robotdata.master_data[0])) 
-              << std::left << std::setw(20) << ("Mpy = " + std::to_string(robotdata.master_data[1]))
-              << std::left << std::setw(20) << ("Mpt = " + std::to_string(robotdata.master_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Cpx = " + std::to_string(robotdata.copy_data[0])) 
-              << std::left << std::setw(20) << ("Cpy = " + std::to_string(robotdata.copy_data[1]))
-              << std::left << std::setw(20) << ("Cpt = " + std::to_string(robotdata.copy_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("PMx = " + std::to_string(robotdata.partner_master_data[0])) 
-              << std::left << std::setw(20) << ("PMy = " + std::to_string(robotdata.partner_master_data[1]))
-              << std::left << std::setw(20) << ("PMt = " + std::to_string(robotdata.partner_master_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Errx = " + std::to_string(robotdata.err_data[0])) 
-              << std::left << std::setw(20) << ("Erry = " + std::to_string(robotdata.err_data[1]))
-              << std::left << std::setw(20) << ("Errt = " + std::to_string(robotdata.err_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("Vx = " + std::to_string(velocity_data[0])) 
-              << std::left << std::setw(20) << ("Vy = " + std::to_string(velocity_data[1]))
-              << std::left << std::setw(20) << ("Vt = " + std::to_string(velocity_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FEactM = " + std::to_string(robotdata.force_actual_data[0])) 
-              << std::left << std::setw(20) << ("FEactA = " + std::to_string(robotdata.force_actual_data[1]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FVirM = " + std::to_string(robotdata.force_virtual_data[4])) 
-              << std::left << std::setw(20) << ("FVirA = " + std::to_string(robotdata.force_virtual_data[3]))
-              << std::left << std::setw(20) << ("VirDir = " + std::to_string(robotdata.force_virtual_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("FIdeM = " + std::to_string(robotdata.force_ideal_data[4])) 
-              << std::left << std::setw(20) << ("FIdeA = " + std::to_string(robotdata.force_ideal_data[3]))
-              << std::left << std::setw(20) << ("IdeDir = " + std::to_string(robotdata.force_ideal_data[2]))
-              << std::endl;
-    std::cout << std::left << std::setw(20) << ("dt = " + std::to_string(dt)) 
-              << std::endl;
-    std::cout << "==============================================" << std::endl;
-}
+int main(int argc, char* argv[]){
+    
+    auto [target_copyrobot_ip, monitor_port] = parse_command_line(argc, argv);
 
-
-int main(){
+    set_cpu_governor("performance");
     std::cout << "================== runnning ==================" << std::endl;
     // 強制終了処理　end proccess
     std::signal(SIGINT, end_task);
 
-    /*
-    * キュー作成
-    * make queue
-    */
-    std::deque<std::pair<std::vector<double>, int64_t>> deque_master;
-    std::deque<std::pair<std::vector<double>, int64_t>> deque_copy;
-    std::mutex queue_mutex_master;
-    std::mutex queue_mutex_copy;
-    
+
     /*
     * インスタンス作成 Instance creation
     */
-    motorcontrol::MotorControl motor_control{};     // Motor setup
-    robotcontrol::RobotDataCal robot_data_cal{};    // data calculation about robot
-    robotcontrol::RobotControl robot_control{};     // robot control
-    robotkinematics::InverceKinematics inverce_kinematics{}; // inverce kinematics
-    forceget::ForceActual force_actual{}; // force actual
-    forceget::ForceIdeal force_ideal{}; // force ideal
-    udp_lib::UdpCommunicator udp_communicator(deque_master, deque_copy, queue_mutex_master, queue_mutex_copy); // UDP communication
-    udp_lib::UdpConnect udpConnection_raspberrypi("192.168.11.201", 65000, 26); // UDP初期化
+    robot_lib::RobotDataCal robot_data_cal{};    // data calculation about robot
+    robot_lib::RobotControl robot_control{};     // robot control
+    robot_lib::InverceKinematics inverce_kinematics{}; // inverce kinematics
+    robot_lib::ForceCal force_actual{}; // force actual
+    robot_lib::ForceIdeal force_ideal{}; // force ideal
+    //net_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
+    data_lib::DataLogger data_logger{monitor_port}; // data logger
+    utils::DequeManager deque_manager{target_copyrobot_ip}; // deque manager
+    stability_lib::EnergyCal energy_cal{}; // energy calculation
     /*
     * ローカル変数定義　local variable definition
     */
-    int64_t send_time = 0; // 送信時間 send time
+    int64_t master_send_time = 0; // 送信時間 send time
+    int64_t force_send_time = 0; // 送信時間 send time
+    // システムクロック定義
+    std::chrono::nanoseconds nano_receive_clock = std::chrono::nanoseconds(0); // 受信時間 receive time 
     //構造体宣言
     RobotData robotdata;
     Mat3x1 mat3x1;
@@ -97,87 +61,90 @@ int main(){
     mat3x3.inverse = inverce_kinematics.invmatrix_cal();    // inverce matrix definition
 
     // 一時的にcopyとpartnerのデータを保持するための変数
-    std::vector<double> temp_copy_data(12, 0.0);
-    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>> temp_convert_data;
-    // 送信用変数
-    std::vector<double> send_data(26, 0.0);
-    // dt計算用 dt calculation
-    std::chrono::high_resolution_clock::time_point last_clock;  // 前回の時刻 previous time
-    std::chrono::microseconds micro_last_clock; 
-    std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
-    std::chrono::microseconds micro_current_clock;
-    std::chrono::microseconds micro_dt(30*1000); //dt
-    std::chrono::microseconds dt(30*1000); // calculation cycle
-    std::chrono::microseconds first_clock;  // first clock
-    /*
-    * ============== 処理 process ==============
-    */
-    last_clock = std::chrono::high_resolution_clock::now(); // 現在時刻を取得 get the current time
-    micro_last_clock = std::chrono::duration_cast<std::chrono::microseconds>(last_clock.time_since_epoch()); // μs（マイクロ秒）単位で取得 convert to micro s
-    first_clock = micro_last_clock;
+    std::tuple <std::vector<double>, std::vector<double>, std::vector<double>,std::vector<double>> temp_convert_data;
+    // 力センサー（UDP）の値を保持するための変数
+    std::vector<double> force_udp_values(4, 0.0);
+    // 力制御によるmasterロボットの一次変数
+    std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
 
-    /*
-    * 受信スレッドの開始
-    */
-    std::thread udp_thread_master(&udp_lib::UdpCommunicator::recive_thread_from_master, &udp_communicator); // UDP receive thread from master
-    std::thread udp_thread_copy(&udp_lib::UdpCommunicator::recive_thread_from_copy, &udp_communicator); // UDP receive thread from master
+    // dt計算用 dt calculation
+    std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
+    std::chrono::microseconds T = std::chrono::microseconds(10*1000); // cycle time
+    std::chrono::microseconds micro_dt = T; // dt
+    int cycle_count = 0; // cycle count
+ 
     /*
     * ============== main roop ==============
     */
+    utils::CycleTimer cycle_timer{T};
     int safety_count = 0; // 安全カウント
-    std::vector<int> not_get_count = {0,0}; // データが取得できなかった回数
+    std::cout << "==================  start   ==================" << std::endl;
+    std::this_thread::sleep_for(std::chrono::milliseconds(2000)); // 2秒待機 wait for 2 seconds
+    deque_manager.udp_thread_manager(); // start udp receive thread
+    /*
+    * SPI, Motor setup
+    */
+    spi_lib::SPIService spi_service{}; // SPI setup
+    robot_lib::MotorControl motor_control{};     // Motor setup
+    deque_manager.force_thread_manager(spi_service); // start force get thread
+    /*
+    * もし，10ms以内にデータが取得できなかったら, Picoが強制終了する
+    * If data cannot be acquired within 10 ms, force termination
+    */
     while(!stop_flag){
+        cycle_count++;
         /*
         * queue取り出し
         * get queue
         */
-        // master
-        {
-            std::lock_guard<std::mutex> lock(queue_mutex_master);
-            if (!deque_master.empty()){
-                std::pair<std::vector<double>, int64_t> getdata = deque_master.front();
-                robotdata.master_data = getdata.first;
-                send_time = getdata.second;
-                robotdata.last_master_data = robotdata.master_data;
-                deque_master.pop_front();
-            }
-            else{
-                robotdata.master_data = robotdata.last_master_data;
-                not_get_count[0]++;
-            }
-        } // unlock用
-        // copy
-        {
-            std::lock_guard<std::mutex> lock(queue_mutex_copy);
-            if (!deque_copy.empty()){
-                temp_copy_data = deque_copy.front().first;
-                robotdata.copy_data.assign(temp_copy_data.begin(), temp_copy_data.begin()+6);
-                robotdata.partner_master_data.assign(temp_copy_data.begin()+6, temp_copy_data.end());
-                robotdata.last_copy_data = robotdata.copy_data;
-                robotdata.last_partner_master_data = robotdata.partner_master_data;
-                deque_copy.pop_front();
-            }
-	        else{
-	    	    robotdata.copy_data = robotdata.last_copy_data;
-                robotdata.partner_master_data = robotdata.last_partner_master_data;
-                not_get_count[1]++;
-            }
-        } // unlock用
+        auto master_data = deque_manager.get_master_data();
+        robotdata.master_data = std::get<0>(master_data);
+        robotdata.remote_copy_data = std::get<1>(master_data);
+        master_send_time = std::get<2>(master_data);
+        auto copy_data = deque_manager.get_copy_data();
+        robotdata.copy_data = copy_data.first;
+        robotdata.partner_master_data = copy_data.second;
+        auto force_data = deque_manager.get_udpforce_data();
+        force_udp_values = force_data.first;
+        force_send_time = force_data.second;
         /*
         *  data calculation about robot
         */
-        temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data);    //Get MasterRobot's Position for manual path trajectory
+        double delay_time = cal_delay_time(master_send_time);
+        temp_convert_data = robot_data_cal.convert_robotdata(robotdata.master_data, robotdata.copy_data, robotdata.partner_master_data, robotdata.remote_copy_data);    //Get MasterRobot's Position for manual path trajectory
         //robotdata.master_data = robot_data_cal.MRobot_Linear_PositionCal(robotdata.master_data, (micro_current_clock - first_clock).count());
-        robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); robotdata.partner_master_data = std::get<2>(temp_convert_data);
+        robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); 
+        robotdata.partner_master_data = std::get<2>(temp_convert_data); robotdata.remote_copy_data = std::get<3>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
+        
+        if (cycle_count <= 500){
+            motor_control.send_voltage(0, 0, 0, spi_service);
+            const auto dt = cycle_timer.tick(); 
+            micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
+            std::cout << "\033[2J\033[1;1H"; 
+            std::cout << "[Info] Waiting... (" << cycle_count << "/500)" << std::endl;
+            deque_manager.rest_not_get_coount(); // force data clear
+            continue;
+        }
         
         /*
         *  force getting
         */
-        robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data);
+        robotdata.force_actual_data = force_actual.FEActCal(robotdata.copy_data, deque_manager.get_actforce_data());
         robotdata.force_virtual_data  = force_ideal.FEVirCal(robotdata.partner_master_data, robotdata.copy_data);
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
-
+        robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values, robotdata.remote_copy_data);
+        
+        std::vector<double> energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
+        
+        /*
+        * force control
+        */
+        double force_delay_time = cal_delay_time(force_send_time);
+        force_control_data = robot_control.bilateral_force_control(robotdata.force_actual_data, robotdata.force_virtual_data, 
+            robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
+        robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
+        
         /*
         * robot control
         */
@@ -186,10 +153,9 @@ int main(){
         if (! result) {
             safety_count++;
             if (safety_count > 15){
-                std::cout << "強制終了" << std::endl;
+                std::cout << "[Warning] Safety count exceeded" << std::endl;
                 stop_flag = true;
             }
-            //robot_control.chenge_pid(6.5, 0.02, 2.5); // PIDを変更
         }
         /*
         * inverce kinematics
@@ -202,49 +168,34 @@ int main(){
         * move robot
         */
         mat3x1.mortor_voltage = motor_control.convert_wheeltovoltage(mat3x1.invwheelvelocity);
-        motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
-
+        //motor_control.EnableMotorDrive(mat3x1.mortor_voltage);
+        motor_control.send_voltage(mat3x1.mortor_voltage[0], mat3x1.mortor_voltage[1], mat3x1.mortor_voltage[2], spi_service);
         robotdata.last_err_data = robotdata.err_data;
 
-        // デバック用 debug
-        send_data.clear();
-        //send_data.insert(send_data.end(), robotdata.err_data.begin(), robotdata.err_data.end()); // 3
-        for (const auto& val : robotdata.err_data) {
-            send_data.push_back(val * 1000);
-        }
-        //send_data.insert(send_data.end(), mat3x1.velocity_data.data(), mat3x1.velocity_data.data()+3); // 3
-        for (int i = 0; i < mat3x1.velocity_data.size(); ++i) {
-            double val = mat3x1.velocity_data[i];
-            send_data.push_back(val * 1000);
-        }
-        send_data.insert(send_data.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
-        send_data.insert(send_data.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
-        send_data.insert(send_data.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.end()); // 2
-        send_data.insert(send_data.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.end()); // 6
-        send_data.insert(send_data.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.end()); // 6
-        udpConnection_raspberrypi.udp_send(send_data, send_time);
-        //show_data(robotdata, mat3x1.velocity_data, micro_dt.count());
+        /* 
+        * debug用保存および表示
+        * 実験データ取得時はshow_dataはコメントアウト推奨
+        * When acquiring experimental data, it is recommended to comment out show_data
+        */
+        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
+        nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy);
+        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
+        data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*
         *  adjusting the cycle
         */
-        current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-        micro_dt = micro_current_clock - micro_last_clock;
-        if (micro_dt <= dt){
-            std::this_thread::sleep_for(dt - micro_dt);
-        }
-        current_clock = std::chrono::high_resolution_clock::now();
-        micro_current_clock = std::chrono::duration_cast<std::chrono::microseconds>(current_clock.time_since_epoch());// μs（マイクロ秒）単位で取得
-        micro_dt = micro_current_clock - micro_last_clock;
-        micro_last_clock = micro_current_clock;
+        const auto dt = cycle_timer.tick(); 
+        micro_dt = std::chrono::duration_cast<std::chrono::microseconds>(dt);
         //std::cout << "dt = " << micro_dt.count() << std::endl;
     }
     // 終了前の後始末
-    udp_thread_master.join(); // UDP receive thread from master
-    udp_thread_copy.join(); // UDP receive thread from copy
-    motor_control.DisableMotorDrive();
-    std::cout << "[INFO] Program terminated gracefully." << std::endl;
-    std::cout << "Not get data count: Master = " << not_get_count[0] << ", Copy = " << not_get_count[1] << std::endl;
+    set_cpu_governor("ondemand");
+    std::cout << "[Info] Stopping threads..." << std::endl;
+    std::cout << "==================   end    ==================" << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(2)); // 2秒待機 wait for 2 seconds
+    
+    std::cout << "[Info] Program terminated gracefully." << std::endl;
     return 0;
-
+    
 }
