@@ -172,10 +172,10 @@ void UdpCommunicator::recive_thread_get_forcevalue(){
     UdpConnect udpConnection_get_forcevalues("0.0.0.0", 42000, 4); // from Copy Robot
     udpConnection_get_forcevalues.udp_bind();
     std::array<rlsarpmin::RLSARPMin, 4> rls = {
-        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,3),
-        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,4),
-        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,5),
-        rlsarpmin::RLSARPMin(90, 100, 0.985, 1e3, 1e-9,6)
+        rlsarpmin::RLSARPMin(100, 100, 0.99, 1e3, 1e-9,3),
+        rlsarpmin::RLSARPMin(100, 100, 0.99, 1e3, 1e-9,4),
+        rlsarpmin::RLSARPMin(100, 100, 0.99, 1e3, 1e-9,5),
+        rlsarpmin::RLSARPMin(100, 100, 0.99, 1e3, 1e-9,6)
     };
 
     while(!stop_flag){
