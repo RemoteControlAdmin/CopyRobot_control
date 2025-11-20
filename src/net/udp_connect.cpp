@@ -186,9 +186,9 @@ void UdpCommunicator::recive_thread_get_forcevalue(){
         }
         double delay_time = cal_delay_time(receiveddata_udpforce.second);
         int k = int(delay_time/1)+10;
-        for(int i = 0; i < 4; i++){
-            receiveddata_udpforce.first[i] = rls[i](receiveddata_udpforce.first[i],k).value_or(receiveddata_udpforce.first[i]);
-        }
+        //for(int i = 0; i < 4; i++){
+        //    receiveddata_udpforce.first[i] = rls[i](receiveddata_udpforce.first[i],k).value_or(receiveddata_udpforce.first[i]);
+        //}
         {
             std::lock_guard<std::mutex> lock(queue_mutex_udpforce_); // lock
             if (!deque_udpforce_.empty()){

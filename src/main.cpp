@@ -18,6 +18,7 @@
 # include "utils/commandline.hpp"
 # include "stability/energy_cal.hpp"
 # include "rlsarpmin.hpp"
+# include "estimation/poskalman.hpp"
 
 void end_task(int signum){
     if(signum == SIGINT) {
@@ -53,6 +54,11 @@ int main(int argc, char* argv[]){
         rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,1),
         rlsarpmin::RLSARPMin(9, 10, 0.9999, 1e3, 1e-9,2),
     };
+
+    PoseKalmanFilter pkf;
+    pkf.setInitialState(0.0, 0.0, 0.0);
+    pkf.setInitialCovariance(1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2);
+    double last_time_ = 0.0;
     /*
     * ローカル変数定義　local variable definition
     */
@@ -125,11 +131,20 @@ int main(int argc, char* argv[]){
         robotdata.master_data = std::get<0>(temp_convert_data); robotdata.copy_data = std::get<1>(temp_convert_data); 
         robotdata.partner_master_data = std::get<2>(temp_convert_data); robotdata.remote_copy_data = std::get<3>(temp_convert_data);
         robotdata.err_data = robot_data_cal.err_robotposition_cal(robotdata.master_data, robotdata.copy_data);
+        
+        /*kalman*/
+        double send_dt = master_send_time - last_time_;
+        last_time_ = master_send_time;
+        pkf.predict(send_dt / 1e9); // 秒に変換 convert to
+        pkf.update(robotdata.master_data[0], robotdata.master_data[1], robotdata.master_data[2],
+                   robotdata.master_data[3], robotdata.master_data[4], robotdata.master_data[5]);
+        std::vector<double> kalman_estimate = {pkf.getX(), pkf.getY(), pkf.getTheta()};
+        robotdata.master_data = kalman_estimate;
         int k = int((delay_time)/10);
         std::cout << "k = " << k << std::endl;
         for(int i = 0; i < 3; i++){
             predict_master_data[i] = rls[i](robotdata.master_data[i], k);
-            robotdata.master_data[i] = predict_master_data[i].value_or(robotdata.master_data[i]);
+            //robotdata.master_data[i] = predict_master_data[i].value_or(robotdata.master_data[i]);
         }
         if (cycle_count <= 500){
             motor_control.send_voltage(0, 0, 0, spi_service);
@@ -193,7 +208,7 @@ int main(int argc, char* argv[]){
         */
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
-        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy);
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy, kalman_estimate);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*

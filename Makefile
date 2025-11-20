@@ -18,6 +18,7 @@ CPPSRCS  := src/robot/forward_kinematics.cpp src/robot/inverce_kinematics.cpp sr
 			src/utils/deque_manager.cpp src/utils/cpu_manager.cpp src/utils/delaytime_cal.cpp\
 			src/utils/cycle_timer.cpp src/utils/commandline.cpp\
 			src/common.cpp src/rlsarpmin.cpp \
+			src/estimation/poskalman.cpp \
 			src/main.cpp
 # test sources
 #CPPSRCS  := src/spi/spi_service.cpp \

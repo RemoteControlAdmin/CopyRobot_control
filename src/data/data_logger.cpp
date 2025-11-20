@@ -35,10 +35,11 @@ void DataLogger::initialize_csv(){
                             "FUDPM",
                             "SumEnergy","RemoteEnergy","LocalEnergy", //26
                             "CRx","CRy","CRt","MRx","MRy","MRt","RCRx","RCRy","RCRt","PMRx","PMRy","PMRt", // debug
+                            "kalman_x","kalman_y","kalman_t"
                     });
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<double> energy){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<double> energy, std::vector<double> kalman_estimate){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
@@ -65,6 +66,11 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), robotdata.master_data.begin(), robotdata.master_data.begin()+3); // 3
     csv_vector.insert(csv_vector.end(), robotdata.remote_copy_data.begin(), robotdata.remote_copy_data.begin()+3); // 3
     csv_vector.insert(csv_vector.end(), robotdata.partner_master_data.begin(), robotdata.partner_master_data.begin()+3); // 3
+    /*
+    */
+    /*kalman data
+    */
+    csv_vector.insert(csv_vector.end(), kalman_estimate.begin(), kalman_estimate.end()); // 3
     /*
     */
     csv_data = {{send_clock, receive_clock},csv_vector};
