@@ -10,8 +10,8 @@ namespace robot_lib{
         Ki = 35; // 5
         Kd = 1; //
 
-        Kp_force = 1/320; // 0.003125
-        Ki_force = 1/320; // 0.003125
+        Kp_force = 1.0/320.0; // 0.003125
+        Ki_force = 1.0/320.0; // 0.003125
         Kd_force = 0; // medium 0.01 high 0
     }
     void RobotControl::chenge_pid(double kp, double ki, double kd){

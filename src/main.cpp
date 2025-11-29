@@ -66,7 +66,8 @@ int main(int argc, char* argv[]){
     std::vector<double> force_udp_values(4, 0.0);
     // 力制御によるmasterロボットの一次変数
     std::vector<double> force_control_data(3, 0.0); // 力制御によるmasterロボットの一次変数
-
+    // 力制御の制御出力
+    std::vector<double> output_force_control(3, 0.0);
     // dt計算用 dt calculation
     std::chrono::high_resolution_clock::time_point current_clock; // 現在の時刻　current time
     std::chrono::microseconds T = std::chrono::microseconds(10*1000); // cycle time
@@ -135,7 +136,7 @@ int main(int argc, char* argv[]){
         robotdata.force_ideal_data = force_ideal.FIdCal(robotdata.partner_master_data, robotdata.master_data);
         robotdata.force_udp_data = force_actual.FUDPCal(force_udp_values, robotdata.remote_copy_data);
         
-        std::vector<double> energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
+        //std::vector<double> energy = energy_cal.sum_energy_cal(robotdata, master_send_time);
         
         /*
         * force control
@@ -145,6 +146,9 @@ int main(int argc, char* argv[]){
             robotdata.force_udp_data, robotdata.master_data, micro_dt.count()); 
         robotdata.err_data = robot_data_cal.err_robotposition_cal(force_control_data, robotdata.copy_data);
         
+        output_force_control[0] = force_control_data[0];
+        output_force_control[1] = force_control_data[1];
+        output_force_control[2] = force_control_data[2];
         /*
         * robot control
         */
@@ -179,7 +183,7 @@ int main(int argc, char* argv[]){
         */
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
-        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy);
+        data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, output_force_control);
         data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*

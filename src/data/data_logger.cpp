@@ -33,12 +33,12 @@ void DataLogger::initialize_csv(){
                             "FEvirM","FEvirA","VirDir",
                             "FIdeaM","FIdeaA","IdeDir", 
                             "FUDPM",
-                            "SumEnergy","RemoteEnergy","LocalEnergy", //26
+                            "OFCx","OFCy","OFCa", //26
                             "CRx","CRy","CRt","MRx","MRy","MRt","RCRx","RCRy","RCRt","PMRx","PMRy","PMRt", // debug
                     });
 }
 
-void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<double> energy){
+void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock, int64_t receive_clock, double delay_time, double force_delay_time, std::vector<double> output_force_control){
     // デバック用 debug
     csv_vector.clear();
     csv_vector.push_back(delay_time);
@@ -58,7 +58,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
     csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
     csv_vector.push_back(robotdata.force_udp_data[0]); // 1
-    csv_vector.insert(csv_vector.end(), energy.begin(), energy.end()); // 1
+    csv_vector.insert(csv_vector.end(), output_force_control.begin(), output_force_control.end()); // 1
     /* debug data
     */
     csv_vector.insert(csv_vector.end(), robotdata.copy_data.begin(), robotdata.copy_data.begin()+3); // 3
