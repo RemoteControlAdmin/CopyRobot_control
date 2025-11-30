@@ -59,6 +59,8 @@ int main(int argc, char* argv[]){
     pkf.setInitialState(0.0, 0.0, 0.0);
     pkf.setInitialCovariance(1e-3, 1e-3, 1e-3, 1e-2, 1e-2, 1e-2);
     double last_time_ = 0.0;
+    double sum_delay = 0.0;
+    double sum_delay_sq  = 0.0;
     /*
     * ローカル変数定義　local variable definition
     */
@@ -134,14 +136,42 @@ int main(int argc, char* argv[]){
         
         /*kalman*/
         double send_dt = master_send_time - last_time_;
-        last_time_ = master_send_time;
+
         pkf.predict(send_dt / 1e9); // 秒に変換 convert to
-        pkf.update(robotdata.master_data[0], robotdata.master_data[1], robotdata.master_data[2],
-                   robotdata.master_data[3], robotdata.master_data[4], robotdata.master_data[5]);
+        
+        if (cycle_count > 100){
+            auto cc = cycle_count - 100;
+            sum_delay += delay_time;
+            sum_delay_sq += delay_time * delay_time;
+
+            double mean = sum_delay / cc;
+            double var  = (sum_delay_sq / cc) - (mean * mean);
+            double std  = std::sqrt(std::max(var, 0.0));  // 負を防ぐためmax
+
+            double diff = std::abs(delay_time - mean);
+
+            if (diff < 30){
+                last_time_ = master_send_time;
+                //robot_control.chenge_pid(8.7,8,7,0.25);
+                pkf.update(robotdata.master_data[0], robotdata.master_data[1], robotdata.master_data[2],
+                        robotdata.master_data[3], robotdata.master_data[4], robotdata.master_data[5]);
+                std::cout << "diff: " << diff
+                        << "  mean: " << mean
+                        << "  std: " << std << std::endl;
+            }
+            if(std > 60){
+                robot_control.chenge_pid(8.7,8.7,0.25);
+            }else if(20< std && std<= 60){
+                auto thf = 1 - 0.0125 * std;
+                robot_control.chenge_pid(35*thf,35*thf,1*thf);
+            }else if (std <= 20){
+                robot_control.chenge_pid(35,35,1);
+            }
+        }
         std::vector<double> kalman_estimate = {pkf.getX(), pkf.getY(), pkf.getTheta()};
         robotdata.master_data = kalman_estimate;
         int k = int((delay_time)/10);
-        std::cout << "k = " << k << std::endl;
+        //std::cout << "k = " << k << std::endl;
         for(int i = 0; i < 3; i++){
             predict_master_data[i] = rls[i](robotdata.master_data[i], k);
             //robotdata.master_data[i] = predict_master_data[i].value_or(robotdata.master_data[i]);
@@ -209,7 +239,7 @@ int main(int argc, char* argv[]){
         current_clock = std::chrono::high_resolution_clock::now();// 現在時刻を取得
         nano_receive_clock = std::chrono::duration_cast<std::chrono::nanoseconds>(current_clock.time_since_epoch());// ns（ナノ秒）単位で取得
         data_logger.save_csv(robotdata, mat3x1, master_send_time, nano_receive_clock.count(),delay_time, force_delay_time, energy, kalman_estimate);
-        data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
+        //data_logger.show_data(robotdata, mat3x1.velocity_data, micro_dt.count(), delay_time, force_delay_time);
         data_logger.send_monitor(robotdata, delay_time, nano_receive_clock.count());
         /*
         *  adjusting the cycle
