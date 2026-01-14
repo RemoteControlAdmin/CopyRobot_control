@@ -19,7 +19,7 @@ std::pair<std::string, int> parse_command_line(int argc, char* argv[]){
         std::cerr << "[Error] Not enough arguments" << std::endl;
         std::cerr << "[Info] 1:local or tailscale \n"
                   << "       2:Target CopyRobot name (e.g., cra1, crb1, crc1, cra2, crb2, crc2, cra3, crb3) \n"
-                  << "       3:Monitor port number (e.g., 52222, 53222)"
+                  << "       3:Monitor port number (e.g., 50333, 51333, 52333)"
         << std::endl;
         exit(1);
     }
