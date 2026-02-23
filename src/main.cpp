@@ -27,7 +27,7 @@ void end_task(int signum){
 
 int main(int argc, char* argv[]){
     
-    auto [target_copyrobot_ip, monitor_port] = parse_command_line(argc, argv);
+    auto [target_copyrobot_ip_1, target_copyrobot_ip_2, monitor_port] = parse_command_line(argc, argv);
 
     set_cpu_governor("performance");
     std::cout << "================== runnning ==================" << std::endl;
@@ -45,7 +45,7 @@ int main(int argc, char* argv[]){
     robot_lib::ForceIdeal force_ideal{}; // force ideal
     //net_lib::UdpConnect udpConnection_raspberrypi("192.168.11.202", 65000, 26); // UDP初期化
     data_lib::DataLogger data_logger{monitor_port}; // data logger
-    utils::DequeManager deque_manager{target_copyrobot_ip}; // deque manager
+    utils::DequeManager deque_manager{target_copyrobot_ip_1}; // deque manager
     stability_lib::EnergyCal energy_cal{}; // energy calculation
     /*
     * ローカル変数定義　local variable definition
