@@ -56,7 +56,7 @@ namespace robot_lib {
         FEactNull =0;
         // convert global frame
         FEactMa = FEactMa + copy_data[2]; // copy_data[2] is the angle offset for the global frame
-        return {FEactM,FEactMa};
+        return {FEactM,FEactMa, FA_G, FB_G}; // Absolute Force, Angle of Force, Force A, Force B 
     }
 
     std::vector<double> ForceCal::FUDPCal(std::vector<double> force_values, std::vector<double> remote_copy_data){
@@ -89,7 +89,8 @@ namespace robot_lib {
         //    return 0;
         //}
 
-        return {std::sqrt(fx_total * fx_total + fy_total * fy_total), std::atan2(fy_total, fx_total)+ remote_copy_data[2]};
+        return {std::sqrt(fx_total * fx_total + fy_total * fy_total), std::atan2(fy_total, fx_total)+ remote_copy_data[2],
+                std::sqrt(ax_g * ay_g), std::sqrt(bx_g * by_g)};
     }
 
 

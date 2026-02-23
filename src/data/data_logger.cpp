@@ -29,7 +29,7 @@ void DataLogger::initialize_csv(){
                             "Vcx","Vcy","Wc",
                             "Ww1","Ww2","Ww3",
                             "Vm1","Vm2","Vm3",
-                            "FEactM","FEactA",
+                            "FEactM","FEactA", "F_A", "F_B",
                             "FEvirM","FEvirA","VirDir",
                             "FIdeaM","FIdeaA","IdeDir", 
                             "FUDPM",
@@ -54,7 +54,7 @@ void DataLogger::save_csv(RobotData robotdata, Mat3x1 mat3x1, int64_t send_clock
     }
     csv_vector.insert(csv_vector.end(), mat3x1.invwheelvelocity.data(), mat3x1.invwheelvelocity.data()+3); // 3
     csv_vector.insert(csv_vector.end(), mat3x1.mortor_voltage.data(), mat3x1.mortor_voltage.data()+3); // 3
-    csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+2); // 2
+    csv_vector.insert(csv_vector.end(), robotdata.force_actual_data.begin(), robotdata.force_actual_data.begin()+4); // 2
     csv_vector.insert(csv_vector.end(), robotdata.force_virtual_data.begin(), robotdata.force_virtual_data.begin()+3); // 6
     csv_vector.insert(csv_vector.end(), robotdata.force_ideal_data.begin(), robotdata.force_ideal_data.begin()+3); // 6
     csv_vector.push_back(robotdata.force_udp_data[0]); // 1
